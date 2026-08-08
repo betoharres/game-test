@@ -39,6 +39,7 @@ var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_grav
 var _pitch: float = 0.0
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
+var _next_footstep_stream: int = 0
 var _footstep_rng := RandomNumberGenerator.new()
 
 
@@ -107,7 +108,8 @@ func _update_footsteps(delta: float, has_movement_input: bool, is_sprinting: boo
 func _play_footstep() -> void:
 	var footstep_player := footstep_players[_next_footstep_player]
 	_next_footstep_player = (_next_footstep_player + 1) % footstep_players.size()
-	footstep_player.stream = FOOTSTEP_STREAMS[_footstep_rng.randi_range(0, FOOTSTEP_STREAMS.size() - 1)]
+	footstep_player.stream = FOOTSTEP_STREAMS[_next_footstep_stream]
+	_next_footstep_stream = (_next_footstep_stream + 1) % FOOTSTEP_STREAMS.size()
 	footstep_player.volume_db = footstep_volume_db + _footstep_rng.randf_range(
 		-footstep_volume_variation_db,
 		footstep_volume_variation_db

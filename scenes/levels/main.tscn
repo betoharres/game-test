@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://qjxe1p841n13" path="res://scripts/levels/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
 [ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
+[ext_resource type="AudioStream" path="res://sounds/ambient/fluorescent-lamp.mp3" id="4_ambient"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -20,6 +21,13 @@ script = ExtResource("1_main")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=98866990]
 environment = SubResource("Environment_main")
+
+[node name="AmbientSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_ambient")
+volume_db = -8.0
+
+[node name="AmbientVariationTimer" type="Timer" parent="."]
+wait_time = 12.0
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=131511648]
 transform = Transform3D(0.819648, 0.4692882, -0.32855093, 0, 0.57352, 0.8191916, 0.57286745, -0.67144877, 0.47008455, 0, 0, 0)
