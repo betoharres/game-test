@@ -23,6 +23,7 @@ Run from the repository root, in this order:
 ```bash
 godot --headless --path . --editor --quit
 godot --headless --path . --quit-after 2
+godot --headless --path . --script res://tests/test_runner.gd
 ```
 
-The first command imports and parses project resources; the second starts the configured main scene and catches startup/runtime errors. There is currently no separate test, lint, formatter, or export pipeline. Headless checks do not verify mouse feel, movement, collisions, or rendering, so gameplay changes still need an editor playtest.
+The first command imports and parses project resources; the second starts the configured main scene and catches startup/runtime errors; the third runs native GDScript unit tests. There is currently no separate lint, formatter, or export pipeline. Headless checks do not verify mouse feel, movement, collisions, or rendering, so gameplay changes still need an editor playtest.

@@ -41,3 +41,13 @@ See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet con
 - `scripts/player/first_person_controller.gd`: movement and camera controller
 
 Player tuning values are exported on the root of `player.tscn`. The camera includes a three-meter `InteractionRay` ready for interaction logic.
+
+## Tests
+
+The project includes a dependency-free GDScript test runner. Run it from the repository root:
+
+```bash
+godot --headless --path . --script res://tests/test_runner.gd
+```
+
+Add test files directly under `tests/` with names ending in `_test.gd`. Extend `res://tests/test_case.gd` and define zero-argument methods beginning with `test_`. The base test case provides `before_each` and `after_each` hooks plus assertions for booleans, equality, and null values.
