@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene format=3 uid="uid://bywp1ondfm3mg"]
 
-[ext_resource type="Script" path="res://scripts/levels/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://qjxe1p841n13" path="res://scripts/levels/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
+[ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -11,87 +12,40 @@ ambient_light_color = Color(0.48, 0.58, 0.72, 1)
 ambient_light_energy = 0.55
 tonemap_mode = 2
 
-[sub_resource type="StandardMaterial3D" id="Material_floor"]
-albedo_color = Color(0.17, 0.22, 0.2, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="BoxMesh_floor"]
-material = SubResource("Material_floor")
-size = Vector3(30, 0.2, 30)
-
 [sub_resource type="BoxShape3D" id="BoxShape_floor"]
-size = Vector3(30, 0.2, 30)
+size = Vector3(82, 0.2, 21)
 
-[sub_resource type="StandardMaterial3D" id="Material_obstacle"]
-albedo_color = Color(0.85, 0.33, 0.16, 1)
-roughness = 0.7
-
-[sub_resource type="BoxMesh" id="BoxMesh_obstacle"]
-material = SubResource("Material_obstacle")
-size = Vector3(2, 2, 2)
-
-[sub_resource type="BoxShape3D" id="BoxShape_obstacle"]
-size = Vector3(2, 2, 2)
-
-[node name="Main" type="Node3D"]
+[node name="Main" type="Node3D" unique_id=2130721005]
 script = ExtResource("1_main")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=98866990]
 environment = SubResource("Environment_main")
 
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation = Vector3(-0.96, -0.61, 0)
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=131511648]
+transform = Transform3D(0.819648, 0.4692882, -0.32855093, 0, 0.57352, 0.8191916, 0.57286745, -0.67144877, 0.47008455, 0, 0, 0)
+visible = false
 light_color = Color(1, 0.91, 0.78, 1)
 light_energy = 1.25
 shadow_enabled = true
 
-[node name="Floor" type="StaticBody3D" parent="."]
-position = Vector3(0, -0.1, 0)
+[node name="Backrooms" type="MeshInstance3D" parent="." unique_id=1328281561]
+mesh = ExtResource("3_backrooms")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Floor"]
-mesh = SubResource("BoxMesh_floor")
+[node name="FloorCollision" type="StaticBody3D" parent="." unique_id=717871123]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.98825, -0.219008, 5.20225)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="FloorCollision" unique_id=461834392]
 shape = SubResource("BoxShape_floor")
 
-[node name="Obstacles" type="Node3D" parent="."]
+[node name="Players" type="Node3D" parent="." unique_id=1362598286]
 
-[node name="CenterBlock" type="StaticBody3D" parent="Obstacles"]
-position = Vector3(0, 1, -1)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/CenterBlock"]
-mesh = SubResource("BoxMesh_obstacle")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/CenterBlock"]
-shape = SubResource("BoxShape_obstacle")
-
-[node name="LeftBlock" type="StaticBody3D" parent="Obstacles"]
-position = Vector3(-4, 1, -4)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/LeftBlock"]
-mesh = SubResource("BoxMesh_obstacle")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/LeftBlock"]
-shape = SubResource("BoxShape_obstacle")
-
-[node name="RightBlock" type="StaticBody3D" parent="Obstacles"]
-position = Vector3(4, 1, -6)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Obstacles/RightBlock"]
-mesh = SubResource("BoxMesh_obstacle")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Obstacles/RightBlock"]
-shape = SubResource("BoxShape_obstacle")
-
-[node name="Players" type="Node3D" parent="."]
-
-[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1776981326]
 spawn_path = NodePath("../Players")
 spawn_limit = 4
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1862285769]
 
-[node name="Instructions" type="Label" parent="HUD"]
+[node name="Instructions" type="Label" parent="HUD" unique_id=994106319]
 offset_left = 20.0
 offset_top = 20.0
 offset_right = 390.0
@@ -101,9 +55,10 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
-text = "WASD  Move    Shift  Sprint    Space  Jump\nEscape  Release mouse    Click  Capture mouse"
+text = "WASD  Move    Shift  Sprint    Space  Jump
+Escape  Release mouse    Click  Capture mouse"
 
-[node name="Crosshair" type="Control" parent="HUD"]
+[node name="Crosshair" type="Control" parent="HUD" unique_id=357753696]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -112,7 +67,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Horizontal" type="ColorRect" parent="HUD/Crosshair"]
+[node name="Horizontal" type="ColorRect" parent="HUD/Crosshair" unique_id=1405764542]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -125,7 +80,7 @@ offset_bottom = 1.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.9)
 
-[node name="Vertical" type="ColorRect" parent="HUD/Crosshair"]
+[node name="Vertical" type="ColorRect" parent="HUD/Crosshair" unique_id=801042974]
 layout_mode = 0
 anchor_left = 0.5
 anchor_top = 0.5
@@ -138,4 +93,4 @@ offset_bottom = 8.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.9)
 
-[node name="RetroScreenEffect" parent="." instance=ExtResource("2_retro")]
+[node name="RetroScreenEffect" parent="." unique_id=2116099923 instance=ExtResource("2_retro")]

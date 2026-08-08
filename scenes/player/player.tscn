@@ -40,6 +40,10 @@ shape = SubResource("CapsuleShape3D_player")
 position = Vector3(0, 0.9, 0)
 mesh = SubResource("CapsuleMesh_player")
 
+[node name="FootstepPlayerA" type="AudioStreamPlayer" parent="."]
+
+[node name="FootstepPlayerB" type="AudioStreamPlayer" parent="."]
+
 [node name="StateSynchronizer" type="MultiplayerSynchronizer" parent="."]
 root_path = NodePath("..")
 replication_config = SubResource("SceneReplicationConfig_player")
