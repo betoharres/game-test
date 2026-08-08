@@ -4,4 +4,4 @@
 export.cfg
 export_presets.cfg
 builds/
-backrooms-vr/
+backrooms-vr/source/*.zip
