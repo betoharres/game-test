@@ -6,6 +6,24 @@ A small Godot 4.x 3D project with a reusable first-person controller and a playa
 
 Open this folder in Godot and press `F6` or `F5`. The project uses the compatibility renderer so it also runs on systems without Vulkan support.
 
+The project starts in offline mode by default. Experimental multiplayer uses direct ENet connections over UDP and supports one host plus three clients:
+
+```bash
+# Host on the default UDP port 7000.
+godot --path . -- --host
+
+# Join a host. Localhost is useful for testing multiple instances.
+godot --path . -- --join=127.0.0.1
+
+# Override the port on both the host and its clients.
+godot --path . -- --host --port=7001
+godot --path . -- --join=127.0.0.1 --port=7001
+```
+
+There is no connection UI, matchmaking, reconnection, NAT traversal, or production security. Internet hosts must manually forward the selected UDP port.
+
+See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet connection instructions.
+
 ## Controls
 
 - `W`, `A`, `S`, `D`: move
@@ -18,7 +36,7 @@ Open this folder in Godot and press `F6` or `F5`. The project uses the compatibi
 ## Structure
 
 - `project.godot`: project settings and input actions
-- `scenes/levels/main.tscn`: starting level and HUD
+- `scenes/levels/main.tscn`: starting level, multiplayer session, and HUD
 - `scenes/player/player.tscn`: reusable player node tree
 - `scripts/player/first_person_controller.gd`: movement and camera controller
 

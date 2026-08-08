@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "plugins/game-development/skills/godot-gdscript-patterns/SKILL.md",
       "computedHash": "da390e553f8533575a5f9b94c9a7a1aed5abf629a3f687f97c8c8d5b65bac873"
+    },
+    "to-spec": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/to-spec/SKILL.md",
+      "computedHash": "7e07d4cfabd1a4f61627ebe2705601784fae7b9aca7e13af3e201ace75738200"
     }
   }
 }

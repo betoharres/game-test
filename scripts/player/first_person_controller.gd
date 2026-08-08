@@ -14,16 +14,29 @@ extends CharacterBody3D
 @export_range(0.0, 89.0, 1.0) var maximum_look_angle: float = 89.0
 
 @onready var head: Node3D = $Head
+@onready var camera: Camera3D = $Head/Camera3D
+@onready var interaction_ray: RayCast3D = $Head/Camera3D/InteractionRay
+@onready var body_mesh: MeshInstance3D = $BodyMesh
 
 var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _pitch: float = 0.0
 
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	var is_local_player := is_multiplayer_authority()
+	set_physics_process(is_local_player)
+	set_process_unhandled_input(is_local_player)
+	camera.current = is_local_player
+	interaction_ray.enabled = is_local_player
+	body_mesh.visible = not is_local_player
+	if is_local_player:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not is_multiplayer_authority():
+		return
+
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	elif event is InputEventMouseButton and event.pressed:
@@ -33,6 +46,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not is_multiplayer_authority():
+		return
+
 	var input_direction := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var local_direction := Vector3(input_direction.x, 0.0, input_direction.y)
 	var movement_direction := (transform.basis * local_direction).normalized()
