@@ -1,6 +1,7 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/levels/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -136,3 +137,5 @@ offset_right = 1.0
 offset_bottom = 8.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.9)
+
+[node name="RetroScreenEffect" parent="." instance=ExtResource("2_retro")]

@@ -37,6 +37,7 @@ See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet con
 
 - `project.godot`: project settings and input actions
 - `scenes/levels/main.tscn`: starting level, multiplayer session, and HUD
+- `scenes/effects/retro_screen_effect.tscn`: reusable full-screen retro post-process
 - `scenes/player/player.tscn`: reusable player node tree
 - `scripts/player/first_person_controller.gd`: movement and camera controller
 
