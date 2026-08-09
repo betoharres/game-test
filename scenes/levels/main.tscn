@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bywp1ondfm3mg"]
 
 [ext_resource type="Script" uid="uid://qjxe1p841n13" path="res://scripts/levels/main.gd" id="1_main"]
-[ext_resource type="PackedScene" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
+[ext_resource type="PackedScene" uid="uid://bvocpbw48suwn" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
 [ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
 [ext_resource type="AudioStream" uid="uid://dgt6qjp3djryf" path="res://sounds/ambient/fluorescent-lamp.mp3" id="4_ambient"]
 
@@ -12,6 +12,8 @@ ambient_light_source = 3
 ambient_light_color = Color(0.48, 0.58, 0.72, 1)
 ambient_light_energy = 0.55
 tonemap_mode = 2
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_j4d2a"]
 
 [sub_resource type="BoxShape3D" id="BoxShape_floor"]
 size = Vector3(82, 0.2, 21)
@@ -39,11 +41,10 @@ shadow_enabled = true
 [node name="Backrooms" type="MeshInstance3D" parent="." unique_id=1328281561]
 mesh = ExtResource("3_backrooms")
 
-[node name="WallCollision" type="StaticBody3D" parent="Backrooms"]
-collision_layer = 1
-collision_mask = 1
+[node name="WallCollision" type="StaticBody3D" parent="Backrooms" unique_id=1059513414]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Backrooms/WallCollision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Backrooms/WallCollision" unique_id=2014301372]
+shape = SubResource("BoxShape3D_j4d2a")
 
 [node name="FloorCollision" type="StaticBody3D" parent="." unique_id=717871123]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.98825, -0.219008, 5.20225)
