@@ -20,12 +20,15 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 @onready var player_spawner: MultiplayerSpawner = $MultiplayerSpawner
 @onready var ambient_sound: AudioStreamPlayer = $AmbientSound
 @onready var ambient_variation_timer: Timer = $AmbientVariationTimer
+@onready var backrooms: MeshInstance3D = $Backrooms
+@onready var wall_collision_shape: CollisionShape3D = $Backrooms/WallCollision/CollisionShape3D
 
 var _spawn_slots: Dictionary[int, int] = {}
 var _ambient_rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	_setup_wall_collision()
 	_setup_ambient_sound()
 	player_spawner.spawn_function = _create_player
 	players.child_entered_tree.connect(_on_player_spawned)
@@ -47,6 +50,28 @@ func _ready() -> void:
 			_start_client(options["address"], options["port"])
 		_:
 			_start_offline()
+
+
+func _setup_wall_collision() -> void:
+	var wall_faces := PackedVector3Array()
+	for surface_index in backrooms.mesh.get_surface_count():
+		if not backrooms.mesh.surface_get_name(surface_index).begins_with("Wall_"):
+			continue
+
+		var arrays := backrooms.mesh.surface_get_arrays(surface_index)
+		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+		var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+		for vertex_index in indices:
+			wall_faces.append(vertices[vertex_index])
+
+	if wall_faces.is_empty():
+		push_error("Could not find wall surfaces in the Backrooms mesh.")
+		return
+
+	var shape := ConcavePolygonShape3D.new()
+	shape.backface_collision = true
+	shape.set_faces(wall_faces)
+	wall_collision_shape.shape = shape
 
 
 func _setup_ambient_sound() -> void:

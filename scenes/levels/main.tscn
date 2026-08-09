@@ -39,6 +39,12 @@ shadow_enabled = true
 [node name="Backrooms" type="MeshInstance3D" parent="." unique_id=1328281561]
 mesh = ExtResource("3_backrooms")
 
+[node name="WallCollision" type="StaticBody3D" parent="Backrooms"]
+collision_layer = 1
+collision_mask = 1
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Backrooms/WallCollision"]
+
 [node name="FloorCollision" type="StaticBody3D" parent="." unique_id=717871123]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.98825, -0.219008, 5.20225)
 
