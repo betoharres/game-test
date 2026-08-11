@@ -25,6 +25,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.01, 1.0, 0.01) var mouse_sensitivity: float = 0.1
 @export_range(-89.0, 0.0, 1.0) var minimum_look_angle: float = -89.0
 @export_range(0.0, 89.0, 1.0) var maximum_look_angle: float = 89.0
+@export_range(0.0, 0.9, 0.01) var zoom_amount: float = 0.6
+@export_range(0.1, 10.0, 0.1) var zoom_duration: float = 0.7
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -37,6 +39,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 
 var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _pitch: float = 0.0
+var _default_camera_fov: float
+var _zoom_tween: Tween
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
 var _next_footstep_stream: int = 0
@@ -45,6 +49,7 @@ var _footstep_rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	var is_local_player := is_multiplayer_authority()
+	_default_camera_fov = camera.fov
 	set_physics_process(is_local_player)
 	set_process_unhandled_input(is_local_player)
 	camera.current = is_local_player
@@ -61,6 +66,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("ui_cancel"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		_set_zoomed(false)
+	elif event.is_action_pressed("zoom"):
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		_set_zoomed(true)
+	elif event.is_action_released("zoom"):
+		_set_zoomed(false)
 	elif event is InputEventMouseButton and event.pressed:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
@@ -129,3 +140,14 @@ func _rotate_camera(mouse_delta: Vector2) -> void:
 		maximum_look_angle
 	)
 	head.rotation.x = deg_to_rad(_pitch)
+
+
+func _set_zoomed(is_zoomed: bool) -> void:
+	if is_instance_valid(_zoom_tween):
+		_zoom_tween.kill()
+
+	var target_fov := _default_camera_fov * (1.0 - zoom_amount) if is_zoomed else _default_camera_fov
+	_zoom_tween = create_tween()
+	_zoom_tween.tween_property(camera, "fov", target_fov, zoom_duration).set_trans(
+		Tween.TRANS_SINE
+	).set_ease(Tween.EASE_IN_OUT)

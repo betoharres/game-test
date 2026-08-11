@@ -30,6 +30,7 @@ See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet con
 - `Shift`: sprint
 - `Space`: jump
 - Mouse: look
+- Hold right click: zoom the camera by 60% over 0.7 seconds
 - `Escape`: release the mouse
 - Left click: capture the mouse again
 
