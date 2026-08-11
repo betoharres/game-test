@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://bywp1ondfm3mg"]
 
 [ext_resource type="Script" uid="uid://qjxe1p841n13" path="res://scripts/levels/main.gd" id="1_main"]
-[ext_resource type="PackedScene" uid="uid://bvocpbw48suwn" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
 [ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
 [ext_resource type="AudioStream" uid="uid://dgt6qjp3djryf" path="res://sounds/ambient/fluorescent-lamp.mp3" id="4_ambient"]
 
@@ -153,5 +152,3 @@ offset_right = 1.0
 offset_bottom = 8.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.9)
-
-[node name="RetroScreenEffect" parent="." unique_id=2116099923 instance=ExtResource("2_retro")]

@@ -3,12 +3,14 @@
 [ext_resource type="Shader" uid="uid://bd1l5c1gyeeax" path="res://shaders/retro_screen.gdshader" id="1_retro"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_retro"]
+resource_local_to_scene = true
 shader = ExtResource("1_retro")
 shader_parameter/pixel_size = 2.0
 shader_parameter/color_levels = 16.0
 shader_parameter/dither_strength = 0.65
 shader_parameter/scanline_strength = 0.08
 shader_parameter/vignette_strength = 0.422000020045
+shader_parameter/exhaustion_vignette_strength = 0.0
 
 [node name="RetroScreenEffect" type="CanvasLayer" unique_id=200675953]
 layer = 100

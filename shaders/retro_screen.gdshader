@@ -7,6 +7,7 @@ uniform float color_levels : hint_range(2.0, 32.0, 1.0) = 16.0;
 uniform float dither_strength : hint_range(0.0, 1.0) = 0.65;
 uniform float scanline_strength : hint_range(0.0, 0.5) = 0.08;
 uniform float vignette_strength : hint_range(0.0, 1.0) = 0.25;
+uniform float exhaustion_vignette_strength : hint_range(0.0, 1.0) = 0.0;
 
 float bayer_2x2(vec2 position) {
 	vec2 cell = mod(floor(position), 2.0);
@@ -27,7 +28,10 @@ void fragment() {
 	float scanline = mix(1.0 - scanline_strength, 1.0, mod(floor(FRAGCOORD.y), 2.0));
 	vec2 centered_uv = SCREEN_UV * 2.0 - 1.0;
 	float vignette = 1.0 - smoothstep(0.45, 1.35, length(centered_uv));
-	screen_color *= scanline * mix(1.0, vignette, vignette_strength);
+	float exhaustion_vignette = 1.0 - smoothstep(0.25, 1.0, length(centered_uv));
+	screen_color *= scanline
+		* mix(1.0, vignette, vignette_strength)
+		* mix(1.0, exhaustion_vignette, exhaustion_vignette_strength);
 
 	COLOR = vec4(screen_color, 1.0);
 }

@@ -20,6 +20,9 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.1, 30.0, 0.1) var sprint_duration: float = 4.0
 @export_range(0.0, 10.0, 0.1) var stamina_regeneration_delay: float = 2.5
 @export_range(0.1, 30.0, 0.1) var stamina_regeneration_duration: float = 5.0
+@export_range(0.0, 1.0, 0.01) var exhaustion_vignette_strength: float = 0.6
+@export_range(0.0, 3.0, 0.05) var exhaustion_vignette_fade_in_duration: float = 0.45
+@export_range(0.0, 3.0, 0.05) var exhaustion_vignette_fade_out_duration: float = 0.9
 
 @export_group("Footsteps")
 @export_range(0.1, 1.0, 0.01) var walk_step_interval: float = 0.44
@@ -39,6 +42,9 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var interaction_ray: RayCast3D = $Head/Camera3D/InteractionRay
 @onready var body_mesh: MeshInstance3D = $BodyMesh
+@onready var screen_filter: ColorRect = $RetroScreenEffect/ScreenFilter
+@onready var screen_effect_material: ShaderMaterial = screen_filter.material
+@onready var heartbeat_player: AudioStreamPlayer = $HeartbeatPlayer
 @onready var footstep_players: Array[AudioStreamPlayer] = [
 	$FootstepPlayerA,
 	$FootstepPlayerB,
@@ -55,6 +61,8 @@ var _footstep_rng := RandomNumberGenerator.new()
 var stamina: float = 0.0
 var _stamina_regeneration_cooldown: float = 0.0
 var _sprint_exhausted: bool = false
+var _exhaustion_vignette_tween: Tween
+var _is_exhaustion_effect_active := false
 
 
 func _ready() -> void:
@@ -67,7 +75,12 @@ func _ready() -> void:
 	camera.current = is_local_player
 	interaction_ray.enabled = is_local_player
 	body_mesh.visible = not is_local_player
+	screen_filter.visible = is_local_player
 	if is_local_player:
+		screen_effect_material.set_shader_parameter("exhaustion_vignette_strength", 0.0)
+		var heartbeat_stream := heartbeat_player.stream.duplicate() as AudioStreamMP3
+		heartbeat_stream.loop = true
+		heartbeat_player.stream = heartbeat_stream
 		_footstep_rng.randomize()
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
@@ -147,6 +160,36 @@ func _update_stamina(delta: float, is_sprinting: bool) -> void:
 
 	if not is_equal_approx(stamina, previous_stamina):
 		stamina_changed.emit(stamina, sprint_duration)
+		if is_node_ready() and is_multiplayer_authority():
+			_set_exhaustion_effect(is_zero_approx(stamina))
+
+
+func _set_exhaustion_effect(is_active: bool) -> void:
+	if is_active == _is_exhaustion_effect_active:
+		return
+
+	_is_exhaustion_effect_active = is_active
+	if is_active:
+		heartbeat_player.play()
+	else:
+		heartbeat_player.stop()
+
+	if is_instance_valid(_exhaustion_vignette_tween):
+		_exhaustion_vignette_tween.kill()
+
+	var target_strength := exhaustion_vignette_strength if is_active else 0.0
+	var fade_duration := (
+		exhaustion_vignette_fade_in_duration
+		if is_active
+		else exhaustion_vignette_fade_out_duration
+	)
+	_exhaustion_vignette_tween = create_tween()
+	_exhaustion_vignette_tween.tween_property(
+		screen_effect_material,
+		"shader_parameter/exhaustion_vignette_strength",
+		target_strength,
+		fade_duration
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _update_footsteps(delta: float, has_movement_input: bool, is_sprinting: bool) -> void:

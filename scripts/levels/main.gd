@@ -374,7 +374,8 @@ func _on_player_spawned(player: Node) -> void:
 		return
 
 	controller.stamina_changed.connect(_on_stamina_changed)
-	_on_stamina_changed(controller.stamina, controller.sprint_duration)
+	if controller.is_node_ready():
+		_on_stamina_changed(controller.stamina, controller.sprint_duration)
 
 
 func _on_stamina_changed(current_stamina: float, maximum_stamina: float) -> void:
