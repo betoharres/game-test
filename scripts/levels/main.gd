@@ -22,6 +22,7 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 @onready var ambient_variation_timer: Timer = $AmbientVariationTimer
 @onready var backrooms: MeshInstance3D = $Backrooms
 @onready var level_collision_shape: CollisionShape3D = $Backrooms/WallCollision/CollisionShape3D
+@onready var stamina_bar: ProgressBar = $HUD/StaminaDisplay/StaminaBar
 
 var _spawn_slots: Dictionary[int, int] = {}
 var _ambient_rng := RandomNumberGenerator.new()
@@ -260,6 +261,7 @@ func _reset_client_session() -> void:
 		peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	stamina_bar.visible = false
 	_spawn_slots.clear()
 	for player in players.get_children():
 		player.queue_free()
@@ -267,3 +269,15 @@ func _reset_client_session() -> void:
 
 func _on_player_spawned(player: Node) -> void:
 	print("[Multiplayer] Player %s spawned; active players: %d/%d" % [player.name, players.get_child_count(), MAX_PLAYERS])
+	var controller := player as FirstPersonController
+	if controller == null or not controller.is_multiplayer_authority():
+		return
+
+	controller.stamina_changed.connect(_on_stamina_changed)
+	_on_stamina_changed(controller.stamina, controller.sprint_duration)
+
+
+func _on_stamina_changed(current_stamina: float, maximum_stamina: float) -> void:
+	stamina_bar.max_value = maximum_stamina
+	stamina_bar.value = current_stamina
+	stamina_bar.visible = true

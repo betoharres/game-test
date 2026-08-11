@@ -18,6 +18,20 @@ tonemap_mode = 2
 [sub_resource type="BoxShape3D" id="BoxShape_floor"]
 size = Vector3(82, 0.2, 21)
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_stamina_background"]
+bg_color = Color(0.035, 0.04, 0.05, 0.9)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_stamina_fill"]
+bg_color = Color(1, 0.505882, 0.090196, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
 [node name="Main" type="Node3D" unique_id=2130721005]
 script = ExtResource("1_main")
 
@@ -60,17 +74,48 @@ spawn_limit = 4
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1862285769]
 
-[node name="Instructions" type="Label" parent="HUD" unique_id=994106319]
+[node name="StaminaDisplay" type="Control" parent="HUD" unique_id=479973225]
+layout_mode = 3
+anchors_preset = 0
 offset_left = 20.0
 offset_top = 20.0
+offset_right = 260.0
+offset_bottom = 57.0
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="HUD/StaminaDisplay" unique_id=791909930]
+layout_mode = 0
+offset_right = 240.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "STAMINA"
+
+[node name="StaminaBar" type="ProgressBar" parent="HUD/StaminaDisplay" unique_id=713857574]
+visible = false
+layout_mode = 0
+offset_top = 19.0
+offset_right = 240.0
+offset_bottom = 37.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("StyleBox_stamina_background")
+theme_override_styles/fill = SubResource("StyleBox_stamina_fill")
+show_percentage = false
+
+[node name="Instructions" type="Label" parent="HUD" unique_id=994106319]
+offset_left = 20.0
+offset_top = 72.0
 offset_right = 430.0
-offset_bottom = 100.0
+offset_bottom = 152.0
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
-text = "WASD  Move    Shift  Sprint    Space  Jump
+text = "WASD  Move    Shift  Sprint (5 sec)    Space  Jump
 Mouse  Look    Right Click  Zoom
 Escape  Release mouse    Left Click  Capture mouse"
 

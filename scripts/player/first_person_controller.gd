@@ -1,6 +1,8 @@
 class_name FirstPersonController
 extends CharacterBody3D
 
+signal stamina_changed(current_stamina: float, maximum_stamina: float)
+
 const FOOTSTEP_STREAMS: Array[AudioStream] = [
 	preload("res://sounds/footsteps/data_pion-st1-footstep-sfx-323053.mp3"),
 	preload("res://sounds/footsteps/data_pion-st2-footstep-sfx-323055.mp3"),
@@ -13,6 +15,11 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export var ground_acceleration: float = 24.0
 @export var air_acceleration: float = 8.0
 @export var jump_velocity: float = 7.0
+
+@export_group("Sprint Stamina")
+@export_range(0.1, 30.0, 0.1) var sprint_duration: float = 5.0
+@export_range(0.0, 10.0, 0.1) var stamina_regeneration_delay: float = 2.0
+@export_range(0.1, 30.0, 0.1) var stamina_regeneration_duration: float = 5.0
 
 @export_group("Footsteps")
 @export_range(0.1, 1.0, 0.01) var walk_step_interval: float = 0.44
@@ -45,10 +52,15 @@ var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
 var _next_footstep_stream: int = 0
 var _footstep_rng := RandomNumberGenerator.new()
+var stamina: float = 0.0
+var _stamina_regeneration_cooldown: float = 0.0
+var _sprint_exhausted: bool = false
 
 
 func _ready() -> void:
 	var is_local_player := is_multiplayer_authority()
+	stamina = sprint_duration
+	stamina_changed.emit(stamina, sprint_duration)
 	_default_camera_fov = camera.fov
 	set_physics_process(is_local_player)
 	set_process_unhandled_input(is_local_player)
@@ -85,7 +97,16 @@ func _physics_process(delta: float) -> void:
 	var input_direction := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var local_direction := Vector3(input_direction.x, 0.0, input_direction.y)
 	var movement_direction := (transform.basis * local_direction).normalized()
-	var is_sprinting := Input.is_action_pressed("sprint")
+	var sprint_requested := Input.is_action_pressed("sprint")
+	if not sprint_requested:
+		_sprint_exhausted = false
+	var is_sprinting := (
+		sprint_requested
+		and not input_direction.is_zero_approx()
+		and not _sprint_exhausted
+		and stamina > 0.0
+	)
+	_update_stamina(delta, is_sprinting)
 	var target_speed := sprint_speed if is_sprinting else walk_speed
 	var acceleration := ground_acceleration if is_on_floor() else air_acceleration
 
@@ -100,6 +121,32 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_footsteps(delta, not input_direction.is_zero_approx(), is_sprinting)
+
+
+func _update_stamina(delta: float, is_sprinting: bool) -> void:
+	var previous_stamina := stamina
+	if is_sprinting:
+		stamina = maxf(stamina - delta, 0.0)
+		_stamina_regeneration_cooldown = stamina_regeneration_delay
+		if stamina <= 0.0:
+			_sprint_exhausted = true
+	else:
+		var regeneration_delta := delta
+		if _stamina_regeneration_cooldown > 0.0:
+			regeneration_delta = maxf(delta - _stamina_regeneration_cooldown, 0.0)
+			_stamina_regeneration_cooldown = maxf(
+				_stamina_regeneration_cooldown - delta,
+				0.0
+			)
+
+		if regeneration_delta > 0.0 and stamina < sprint_duration:
+			var regeneration_rate := sprint_duration / stamina_regeneration_duration
+			stamina = minf(stamina + regeneration_rate * regeneration_delta, sprint_duration)
+			if is_equal_approx(stamina, sprint_duration):
+				_sprint_exhausted = false
+
+	if not is_equal_approx(stamina, previous_stamina):
+		stamina_changed.emit(stamina, sprint_duration)
 
 
 func _update_footsteps(delta: float, has_movement_input: bool, is_sprinting: bool) -> void:
