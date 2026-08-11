@@ -13,12 +13,17 @@ const DISTANT_SOUND_STREAMS: Array[AudioStream] = [
 	preload("res://sounds/random-distant-sounds/long-airplane-flying-over-1578.wav"),
 	preload("res://sounds/random-distant-sounds/bathroom-sink-drain-1873.wav"),
 	preload("res://sounds/random-distant-sounds/creaking-public-toilet-door-203.wav"),
+	preload("res://sounds/random-distant-sounds/creature-sobbing-in-fear-464.wav"),
+	preload("res://sounds/random-distant-sounds/lost-kid-sobbing-474.wav"),
+	preload("res://sounds/random-distant-sounds/woman-sadmoan-33954.mp3"),
+	preload("res://sounds/random-distant-sounds/hot-ooh-68892.mp3"),
 ]
-const DISTANT_SOUND_VOLUMES_DB: Array[float] = [-12.0, 4.0, -8.0]
+const DISTANT_SOUND_VOLUMES_DB: Array[float] = [-11.0, 6.0, -8.0, -2.0, -1.0, -8.0, -5.0]
 const DISTANT_SOUND_MIN_DELAY := 12.0
 const DISTANT_SOUND_MAX_DELAY := 30.0
 const DISTANT_SOUND_MIN_DISTANCE := 20.0
 const DISTANT_SOUND_MAX_DISTANCE := 32.0
+const DISTANT_SOUND_LOOK_UP_VOLUME_MULTIPLIER := 1.7
 const SPAWN_POSITIONS: Array[Vector3] = [
 	Vector3(-3.0, 0.05, 6.0),
 	Vector3(3.0, 0.05, 6.0),
@@ -40,6 +45,7 @@ var _spawn_slots: Dictionary[int, int] = {}
 var _ambient_rng := RandomNumberGenerator.new()
 var _distant_sound_rng := RandomNumberGenerator.new()
 var _last_distant_sound_index := -1
+var _current_distant_sound_volume_db := 0.0
 
 
 func _ready() -> void:
@@ -66,6 +72,27 @@ func _ready() -> void:
 			_start_client(options["address"], options["port"])
 		_:
 			_start_offline()
+
+
+func _process(_delta: float) -> void:
+	if not distant_sound.playing:
+		return
+
+	var local_player := _get_local_player()
+	if local_player == null:
+		return
+
+	var camera := local_player.get_node_or_null("Head/Camera3D") as Camera3D
+	if camera == null:
+		return
+
+	var look_up_amount := clampf(-camera.global_basis.z.y, 0.0, 1.0)
+	var volume_multiplier := lerpf(
+		1.0,
+		DISTANT_SOUND_LOOK_UP_VOLUME_MULTIPLIER,
+		look_up_amount
+	)
+	distant_sound.volume_db = _current_distant_sound_volume_db + linear_to_db(volume_multiplier)
 
 
 func _setup_level_collision() -> void:
@@ -158,7 +185,8 @@ func _play_distant_sound() -> void:
 		sin(angle) * distance
 	)
 	distant_sound.stream = DISTANT_SOUND_STREAMS[sound_index]
-	distant_sound.volume_db = DISTANT_SOUND_VOLUMES_DB[sound_index]
+	_current_distant_sound_volume_db = DISTANT_SOUND_VOLUMES_DB[sound_index]
+	distant_sound.volume_db = _current_distant_sound_volume_db
 	distant_sound.pitch_scale = _distant_sound_rng.randf_range(0.97, 1.03)
 	distant_sound.play()
 
