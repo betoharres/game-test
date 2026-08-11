@@ -9,6 +9,16 @@ const AMBIENT_BASE_VOLUME_DB := -8.0
 const AMBIENT_VOLUME_VARIATION_DB := 1.0
 const AMBIENT_PITCH_VARIATION := 0.01
 const AMBIENT_VARIATION_DURATION := 6.0
+const DISTANT_SOUND_STREAMS: Array[AudioStream] = [
+	preload("res://sounds/random-distant-sounds/long-airplane-flying-over-1578.wav"),
+	preload("res://sounds/random-distant-sounds/bathroom-sink-drain-1873.wav"),
+	preload("res://sounds/random-distant-sounds/creaking-public-toilet-door-203.wav"),
+]
+const DISTANT_SOUND_VOLUMES_DB: Array[float] = [-12.0, 4.0, -8.0]
+const DISTANT_SOUND_MIN_DELAY := 12.0
+const DISTANT_SOUND_MAX_DELAY := 30.0
+const DISTANT_SOUND_MIN_DISTANCE := 20.0
+const DISTANT_SOUND_MAX_DISTANCE := 32.0
 const SPAWN_POSITIONS: Array[Vector3] = [
 	Vector3(-3.0, 0.05, 6.0),
 	Vector3(3.0, 0.05, 6.0),
@@ -20,17 +30,22 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 @onready var player_spawner: MultiplayerSpawner = $MultiplayerSpawner
 @onready var ambient_sound: AudioStreamPlayer = $AmbientSound
 @onready var ambient_variation_timer: Timer = $AmbientVariationTimer
+@onready var distant_sound: AudioStreamPlayer3D = $DistantSound
+@onready var distant_sound_timer: Timer = $DistantSoundTimer
 @onready var backrooms: MeshInstance3D = $Backrooms
 @onready var level_collision_shape: CollisionShape3D = $Backrooms/WallCollision/CollisionShape3D
 @onready var stamina_bar: ProgressBar = $HUD/StaminaDisplay/StaminaBar
 
 var _spawn_slots: Dictionary[int, int] = {}
 var _ambient_rng := RandomNumberGenerator.new()
+var _distant_sound_rng := RandomNumberGenerator.new()
+var _last_distant_sound_index := -1
 
 
 func _ready() -> void:
 	_setup_level_collision()
 	_setup_ambient_sound()
+	_setup_distant_sounds()
 	player_spawner.spawn_function = _create_player
 	players.child_entered_tree.connect(_on_player_spawned)
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -108,10 +123,67 @@ func _vary_ambient_sound() -> void:
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
+func _setup_distant_sounds() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+
+	_distant_sound_rng.randomize()
+	distant_sound.finished.connect(_schedule_distant_sound)
+	distant_sound_timer.timeout.connect(_play_distant_sound)
+	distant_sound_timer.start(_distant_sound_rng.randf_range(6.0, 16.0))
+
+
+func _play_distant_sound() -> void:
+	var local_player := _get_local_player()
+	if local_player == null:
+		distant_sound_timer.start(1.0)
+		return
+
+	var sound_index := _distant_sound_rng.randi_range(0, DISTANT_SOUND_STREAMS.size() - 1)
+	if sound_index == _last_distant_sound_index:
+		sound_index = (sound_index + _distant_sound_rng.randi_range(
+			1,
+			DISTANT_SOUND_STREAMS.size() - 1
+		)) % DISTANT_SOUND_STREAMS.size()
+	_last_distant_sound_index = sound_index
+
+	var angle := _distant_sound_rng.randf_range(0.0, TAU)
+	var distance := _distant_sound_rng.randf_range(
+		DISTANT_SOUND_MIN_DISTANCE,
+		DISTANT_SOUND_MAX_DISTANCE
+	)
+	distant_sound.global_position = local_player.global_position + Vector3(
+		cos(angle) * distance,
+		_distant_sound_rng.randf_range(2.0, 6.0),
+		sin(angle) * distance
+	)
+	distant_sound.stream = DISTANT_SOUND_STREAMS[sound_index]
+	distant_sound.volume_db = DISTANT_SOUND_VOLUMES_DB[sound_index]
+	distant_sound.pitch_scale = _distant_sound_rng.randf_range(0.97, 1.03)
+	distant_sound.play()
+
+
+func _schedule_distant_sound() -> void:
+	distant_sound_timer.start(_distant_sound_rng.randf_range(
+		DISTANT_SOUND_MIN_DELAY,
+		DISTANT_SOUND_MAX_DELAY
+	))
+
+
+func _get_local_player() -> Node3D:
+	for player in players.get_children():
+		if player.is_multiplayer_authority():
+			return player as Node3D
+	return null
+
+
 func _exit_tree() -> void:
 	ambient_variation_timer.stop()
 	ambient_sound.stop()
 	ambient_sound.stream = null
+	distant_sound_timer.stop()
+	distant_sound.stop()
+	distant_sound.stream = null
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	var peer := multiplayer.multiplayer_peer
 	if peer != null and not peer is OfflineMultiplayerPeer:
