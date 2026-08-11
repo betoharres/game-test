@@ -9,7 +9,7 @@ shader_parameter/pixel_size = 2.0
 shader_parameter/color_levels = 16.0
 shader_parameter/dither_strength = 0.65
 shader_parameter/scanline_strength = 0.08
-shader_parameter/vignette_strength = 0.422000020045
+shader_parameter/vignette_strength = 0.1870000088825
 shader_parameter/exhaustion_vignette_strength = 0.0
 
 [node name="RetroScreenEffect" type="CanvasLayer" unique_id=200675953]
