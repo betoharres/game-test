@@ -77,45 +77,35 @@ spawn_limit = 4
 [node name="StaminaDisplay" type="Control" parent="HUD" unique_id=479973225]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 260.0
-offset_bottom = 57.0
+offset_left = 540.0
+offset_top = 667.0
+offset_right = 780.0
+offset_bottom = 704.0
 mouse_filter = 2
-
-[node name="Label" type="Label" parent="HUD/StaminaDisplay" unique_id=791909930]
-layout_mode = 0
-offset_right = 240.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
-theme_override_constants/shadow_offset_x = 1
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 13
-text = "STAMINA"
 
 [node name="StaminaBar" type="ProgressBar" parent="HUD/StaminaDisplay" unique_id=713857574]
 visible = false
 layout_mode = 0
 offset_top = 19.0
 offset_right = 240.0
-offset_bottom = 37.0
+offset_bottom = 29.0
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBox_stamina_background")
 theme_override_styles/fill = SubResource("StyleBox_stamina_fill")
 show_percentage = false
 
 [node name="Instructions" type="Label" parent="HUD" unique_id=994106319]
-offset_left = 20.0
-offset_top = 72.0
-offset_right = 430.0
-offset_bottom = 152.0
+visible = false
+offset_left = 18.0
+offset_top = 20.0
+offset_right = 458.0
+offset_bottom = 104.0
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
-text = "WASD  Move    Shift  Sprint (5 sec)    Space  Jump
+text = "WASD  Move    Shift  Sprint    Space  Jump
 Mouse  Look    Right Click  Zoom
 Escape  Release mouse    Left Click  Capture mouse"
 

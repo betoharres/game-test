@@ -27,7 +27,7 @@ See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet con
 ## Controls
 
 - `W`, `A`, `S`, `D`: move
-- `Shift`: sprint for up to about five seconds; stamina starts regenerating two seconds after sprinting stops
+- `Shift`: sprint for up to about four seconds; stamina starts regenerating 2.5 seconds after sprinting stops
 - `Space`: jump
 - Mouse: look
 - Hold right click: zoom the camera by 60% over 0.7 seconds

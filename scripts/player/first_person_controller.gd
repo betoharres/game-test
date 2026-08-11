@@ -17,8 +17,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export var jump_velocity: float = 7.0
 
 @export_group("Sprint Stamina")
-@export_range(0.1, 30.0, 0.1) var sprint_duration: float = 5.0
-@export_range(0.0, 10.0, 0.1) var stamina_regeneration_delay: float = 2.0
+@export_range(0.1, 30.0, 0.1) var sprint_duration: float = 4.0
+@export_range(0.0, 10.0, 0.1) var stamina_regeneration_delay: float = 2.5
 @export_range(0.1, 30.0, 0.1) var stamina_regeneration_duration: float = 5.0
 
 @export_group("Footsteps")
