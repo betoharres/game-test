@@ -30,7 +30,7 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_group("Footsteps")
 @export_range(0.1, 1.0, 0.01) var walk_step_interval: float = 0.44
 @export_range(0.1, 1.0, 0.01) var sprint_step_interval: float = 0.34
-@export_range(-40.0, 0.0, 0.5) var footstep_volume_db: float = -32.0
+@export_range(-40.0, 0.0, 0.5) var footstep_volume_db: float = -22.0
 @export_range(0.0, 6.0, 0.1) var footstep_volume_variation_db: float = 1.5
 @export_range(0.0, 0.25, 0.01) var footstep_pitch_variation: float = 0.05
 

@@ -24,6 +24,7 @@ const DISTANT_SOUND_MAX_DELAY := 30.0
 const DISTANT_SOUND_MIN_DISTANCE := 20.0
 const DISTANT_SOUND_MAX_DISTANCE := 32.0
 const DISTANT_SOUND_LOOK_UP_VOLUME_MULTIPLIER := 1.7
+const STAMINA_FADE_DURATION := 0.5
 const SPAWN_POSITIONS: Array[Vector3] = [
 	Vector3(-3.0, 0.05, 6.0),
 	Vector3(3.0, 0.05, 6.0),
@@ -46,6 +47,7 @@ var _ambient_rng := RandomNumberGenerator.new()
 var _distant_sound_rng := RandomNumberGenerator.new()
 var _last_distant_sound_index := -1
 var _current_distant_sound_volume_db := 0.0
+var _stamina_fade_tween: Tween
 
 
 func _ready() -> void:
@@ -361,6 +363,7 @@ func _reset_client_session() -> void:
 		peer.close()
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_stop_stamina_fade()
 	stamina_bar.visible = false
 	_spawn_slots.clear()
 	for player in players.get_children():
@@ -379,6 +382,24 @@ func _on_player_spawned(player: Node) -> void:
 
 
 func _on_stamina_changed(current_stamina: float, maximum_stamina: float) -> void:
+	_stop_stamina_fade()
 	stamina_bar.max_value = maximum_stamina
 	stamina_bar.value = current_stamina
 	stamina_bar.visible = true
+	stamina_bar.modulate.a = 1.0
+
+	if is_equal_approx(current_stamina, maximum_stamina):
+		_stamina_fade_tween = create_tween()
+		_stamina_fade_tween.tween_property(
+			stamina_bar,
+			"modulate:a",
+			0.0,
+			STAMINA_FADE_DURATION
+		)
+		_stamina_fade_tween.tween_callback(stamina_bar.hide)
+
+
+func _stop_stamina_fade() -> void:
+	if _stamina_fade_tween != null and _stamina_fade_tween.is_valid():
+		_stamina_fade_tween.kill()
+	_stamina_fade_tween = null

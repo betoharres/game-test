@@ -10,13 +10,13 @@ background_color = Color(0.055, 0.075, 0.11, 1)
 ambient_light_source = 3
 ambient_light_color = Color(0.48, 0.58, 0.72, 1)
 ambient_light_energy = 0.55
+tonemap_mode = 2
 fog_enabled = true
-fog_light_color = Color(0.055, 0.075, 0.11, 1)
-fog_density = 0.8
 fog_mode = 1
+fog_light_color = Color(0.055, 0.075, 0.11, 1)
+fog_density = 1.0
 fog_depth_begin = 12.0
 fog_depth_end = 22.0
-tonemap_mode = 2
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_j4d2a"]
 
@@ -50,14 +50,14 @@ volume_db = -8.0
 [node name="AmbientVariationTimer" type="Timer" parent="." unique_id=1876990507]
 wait_time = 12.0
 
-[node name="DistantSound" type="AudioStreamPlayer3D" parent="."]
+[node name="DistantSound" type="AudioStreamPlayer3D" parent="." unique_id=1095956799]
 unit_size = 8.0
 max_distance = 55.0
+panning_strength = 1.25
 attenuation_filter_cutoff_hz = 1800.0
 attenuation_filter_db = -12.0
-panning_strength = 1.25
 
-[node name="DistantSoundTimer" type="Timer" parent="."]
+[node name="DistantSoundTimer" type="Timer" parent="." unique_id=2058788229]
 one_shot = true
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=131511648]
@@ -103,7 +103,7 @@ visible = false
 layout_mode = 0
 offset_top = 19.0
 offset_right = 240.0
-offset_bottom = 29.0
+offset_bottom = 24.0
 mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBox_stamina_background")
 theme_override_styles/fill = SubResource("StyleBox_stamina_fill")
