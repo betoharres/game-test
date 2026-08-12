@@ -37,6 +37,10 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 89.0, 1.0) var maximum_look_angle: float = 89.0
 @export_range(0.0, 0.9, 0.01) var zoom_amount: float = 0.6
 @export_range(0.1, 10.0, 0.1) var zoom_duration: float = 0.7
+@export_range(0.0, 0.1, 0.005) var head_bob_vertical_amount: float = 0.035
+@export_range(0.0, 0.1, 0.005) var head_bob_horizontal_amount: float = 0.02
+@export_range(0.1, 5.0, 0.1) var head_bob_frequency: float = 2.0
+@export_range(1.0, 20.0, 0.5) var head_bob_smoothing: float = 10.0
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -53,6 +57,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _pitch: float = 0.0
 var _default_camera_fov: float
+var _default_camera_position: Vector3
+var _head_bob_phase: float = 0.0
 var _zoom_tween: Tween
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
@@ -70,6 +76,7 @@ func _ready() -> void:
 	stamina = sprint_duration
 	stamina_changed.emit(stamina, sprint_duration)
 	_default_camera_fov = camera.fov
+	_default_camera_position = camera.position
 	set_physics_process(is_local_player)
 	set_process_unhandled_input(is_local_player)
 	camera.current = is_local_player
@@ -134,6 +141,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_footsteps(delta, not input_direction.is_zero_approx(), is_sprinting)
+	_update_camera_bob(delta)
 
 
 func _update_stamina(delta: float, is_sprinting: bool) -> void:
@@ -220,6 +228,23 @@ func _play_footstep() -> void:
 		1.0 + footstep_pitch_variation
 	)
 	footstep_player.play()
+
+
+func _update_camera_bob(delta: float) -> void:
+	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+	var movement_ratio := horizontal_speed / maxf(walk_speed, 0.001)
+	var target_offset := Vector3.ZERO
+	if is_on_floor() and horizontal_speed >= 0.1:
+		_head_bob_phase = fposmod(
+			_head_bob_phase + delta * head_bob_frequency * TAU * movement_ratio,
+			TAU * 2.0
+		)
+		var amplitude := minf(movement_ratio, 1.0)
+		target_offset.x = sin(_head_bob_phase * 0.5) * head_bob_horizontal_amount * amplitude
+		target_offset.y = sin(_head_bob_phase) * head_bob_vertical_amount * amplitude
+
+	var blend := 1.0 - exp(-head_bob_smoothing * delta)
+	camera.position = camera.position.lerp(_default_camera_position + target_offset, blend)
 
 
 func _rotate_camera(mouse_delta: Vector2) -> void:
