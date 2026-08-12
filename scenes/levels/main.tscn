@@ -113,7 +113,7 @@ show_percentage = false
 visible = false
 offset_left = 18.0
 offset_top = 20.0
-offset_right = 458.0
+offset_right = 618.0
 offset_bottom = 104.0
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
@@ -121,7 +121,7 @@ theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
 text = "WASD  Move    Shift  Sprint    Space  Jump
-Mouse  Look    Right Click  Zoom
+Hold Ctrl  Crouch    Mouse  Look    Right Click  Zoom
 Escape  Release mouse    Left Click  Capture mouse"
 
 [node name="Crosshair" type="Control" parent="HUD" unique_id=357753696]
