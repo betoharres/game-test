@@ -65,7 +65,8 @@ vec2 safe_uv(vec2 uv) {
 vec2 fish_eye_uv(vec2 uv) {
 	vec2 centered_uv = uv * 2.0 - 1.0;
 	float radius_squared = dot(centered_uv, centered_uv);
-	float edge_scale = 1.0 / (1.0 + fish_eye_strength);
+	// Normalize against the corners so distortion never exposes areas outside the scene.
+	float edge_scale = 1.0 / (1.0 + fish_eye_strength * 2.0);
 	return centered_uv * (1.0 + fish_eye_strength * radius_squared) * edge_scale * 0.5 + 0.5;
 }
 
@@ -118,12 +119,7 @@ void fragment() {
 
 	vec2 centered_uv = SCREEN_UV * 2.0 - 1.0;
 	float radius_squared = dot(centered_uv, centered_uv);
-	vec2 distorted_uv = fish_eye_uv(SCREEN_UV);
-	vec2 edge_distance = min(distorted_uv, vec2(1.0) - distorted_uv);
-	float edge_softness = max(SCREEN_PIXEL_SIZE.x, SCREEN_PIXEL_SIZE.y) * 2.0;
-	float curved_screen_mask = smoothstep(0.0, edge_softness, min(edge_distance.x, edge_distance.y));
-	curved_screen_mask = mix(1.0, curved_screen_mask, step(0.0001, fish_eye_strength));
-	vec2 signal_uv = distorted_uv;
+	vec2 signal_uv = fish_eye_uv(SCREEN_UV);
 
 	float global_drift = (noise_1d(TIME * 1.71 + 4.2) - 0.5) * 2.0 * horizontal_drift_pixels;
 	float row = floor(SCREEN_UV.y * luma_lines);
@@ -245,7 +241,6 @@ void fragment() {
 	float exhaustion_vignette = 1.0 - smoothstep(0.25, 1.0, length(centered_uv));
 	screen_color *= mix(1.0, vignette, vignette_strength)
 		* mix(1.0, exhaustion_vignette, exhaustion_vignette_strength);
-	screen_color *= curved_screen_mask;
 
 	COLOR = vec4(clamp(screen_color, vec3(0.0), vec3(1.0)), 1.0);
 }
