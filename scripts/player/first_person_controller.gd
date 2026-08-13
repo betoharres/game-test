@@ -36,7 +36,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 0.25, 0.01) var footstep_pitch_variation: float = 0.05
 
 @export_group("Camera")
-@export_range(0.01, 1.0, 0.01) var mouse_sensitivity: float = 0.1
+@export_range(0.01, 1.0, 0.01) var mouse_sensitivity: float = 0.08
+@export_range(1.0, 30.0, 0.5) var mouse_look_smoothing_speed: float = 5.0
 @export_range(-89.0, 0.0, 1.0) var minimum_look_angle: float = -89.0
 @export_range(0.0, 89.0, 1.0) var maximum_look_angle: float = 89.0
 @export_range(0.0, 0.9, 0.01) var zoom_amount: float = 0.6
@@ -69,6 +70,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 
 var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
 var _pitch: float = 0.0
+var _target_pitch: float = 0.0
+var _target_yaw: float = 0.0
 var _default_camera_fov: float
 var _default_camera_position: Vector3
 var _standing_head_position: Vector3
@@ -101,6 +104,9 @@ var is_crouching: bool = false:
 
 func _ready() -> void:
 	var is_local_player := is_multiplayer_authority()
+	_pitch = rad_to_deg(head.rotation.x)
+	_target_pitch = _pitch
+	_target_yaw = rotation.y
 	stamina = sprint_duration
 	stamina_changed.emit(stamina, sprint_duration)
 	_default_camera_fov = camera.fov
@@ -108,6 +114,7 @@ func _ready() -> void:
 	_cache_stance_geometry()
 	_apply_stance(is_crouching, true)
 	set_physics_process(is_local_player)
+	set_process(is_local_player)
 	set_process_unhandled_input(is_local_player)
 	camera.current = is_local_player
 	interaction_ray.enabled = is_local_player
@@ -121,6 +128,13 @@ func _ready() -> void:
 		heartbeat_player.stream = heartbeat_stream
 		_footstep_rng.randomize()
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _process(delta: float) -> void:
+	var blend := 1.0 - exp(-mouse_look_smoothing_speed * delta)
+	rotation.y = lerp_angle(rotation.y, _target_yaw, blend)
+	_pitch = lerpf(_pitch, _target_pitch, blend)
+	head.rotation.x = deg_to_rad(_pitch)
 
 
 func _configure_fog() -> void:
@@ -353,13 +367,16 @@ func _update_camera_bob(delta: float) -> void:
 
 
 func _rotate_camera(mouse_delta: Vector2) -> void:
-	rotate_y(deg_to_rad(-mouse_delta.x * mouse_sensitivity))
-	_pitch = clampf(
-		_pitch - mouse_delta.y * mouse_sensitivity,
+	_target_yaw = wrapf(
+		_target_yaw - deg_to_rad(mouse_delta.x * mouse_sensitivity),
+		-PI,
+		PI
+	)
+	_target_pitch = clampf(
+		_target_pitch - mouse_delta.y * mouse_sensitivity,
 		minimum_look_angle,
 		maximum_look_angle
 	)
-	head.rotation.x = deg_to_rad(_pitch)
 
 
 func _set_zoomed(is_zoomed: bool) -> void:
