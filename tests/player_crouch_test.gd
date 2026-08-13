@@ -38,3 +38,22 @@ func test_player_crouches_only_while_action_is_held() -> void:
 	_controller._update_crouch_state(Input.is_action_pressed("crouch"))
 
 	assert_false(_controller.is_crouching)
+
+
+func test_crouching_reduces_footstep_volume() -> void:
+	_controller.footstep_volume_variation_db = 0.0
+	_controller.is_crouching = true
+	_controller._play_footstep()
+
+	assert_equal(
+		_controller.footstep_players[0].volume_db,
+		_controller.footstep_volume_db - _controller.crouch_footstep_attenuation_db
+	)
+
+	_controller.is_crouching = false
+	_controller._play_footstep()
+
+	assert_equal(
+		_controller.footstep_players[1].volume_db,
+		_controller.footstep_volume_db
+	)

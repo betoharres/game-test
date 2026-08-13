@@ -31,6 +31,7 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.1, 1.0, 0.01) var walk_step_interval: float = 0.44
 @export_range(0.1, 1.0, 0.01) var sprint_step_interval: float = 0.34
 @export_range(-40.0, 0.0, 0.5) var footstep_volume_db: float = -22.0
+@export_range(0.0, 20.0, 0.5) var crouch_footstep_attenuation_db: float = 10.0
 @export_range(0.0, 6.0, 0.1) var footstep_volume_variation_db: float = 1.5
 @export_range(0.0, 0.25, 0.01) var footstep_pitch_variation: float = 0.05
 
@@ -132,7 +133,7 @@ func _configure_fog() -> void:
 
 	var local_environment := world_environment.duplicate() as Environment
 	local_environment.fog_enabled = fog_enabled
-	local_environment.fog_mode = fog_mode
+	local_environment.fog_mode = fog_mode as Environment.FogMode
 	local_environment.fog_light_color = fog_light_color
 	local_environment.fog_density = fog_density
 	local_environment.fog_depth_begin = fog_depth_begin
@@ -322,7 +323,8 @@ func _play_footstep() -> void:
 	_next_footstep_player = (_next_footstep_player + 1) % footstep_players.size()
 	footstep_player.stream = FOOTSTEP_STREAMS[_next_footstep_stream]
 	_next_footstep_stream = (_next_footstep_stream + 1) % FOOTSTEP_STREAMS.size()
-	footstep_player.volume_db = footstep_volume_db + _footstep_rng.randf_range(
+	var crouch_attenuation := crouch_footstep_attenuation_db if is_crouching else 0.0
+	footstep_player.volume_db = footstep_volume_db - crouch_attenuation + _footstep_rng.randf_range(
 		-footstep_volume_variation_db,
 		footstep_volume_variation_db
 	)
