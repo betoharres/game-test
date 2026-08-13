@@ -5,7 +5,7 @@ const DEFAULT_PORT := 7000
 const MAX_PLAYERS := 4
 const MAX_REMOTE_CLIENTS := MAX_PLAYERS - 1
 const PLAYER_SCENE := preload("res://scenes/player/player.tscn")
-const AMBIENT_BASE_VOLUME_DB := -30.0
+const AMBIENT_BASE_VOLUME_DB := -25.0
 const AMBIENT_VOLUME_VARIATION_DB := 1.0
 const AMBIENT_PITCH_VARIATION := 0.01
 const AMBIENT_VARIATION_DURATION := 6.0
@@ -18,7 +18,7 @@ const DISTANT_SOUND_STREAMS: Array[AudioStream] = [
 	preload("res://sounds/random-distant-sounds/woman-sadmoan-33954.mp3"),
 	preload("res://sounds/random-distant-sounds/hot-ooh-68892.mp3"),
 ]
-const DISTANT_SOUND_VOLUMES_DB: Array[float] = [-11.0, 3.0, -8.0, -3.0, -5.0, -10.0, -8.0]
+const DISTANT_SOUND_VOLUMES_DB: Array[float] = [-11.0, 3.0, -13.0, -10.0, -10.0, -10.0, -8.0]
 const DISTANT_SOUND_MIN_DELAY := 12.0
 const DISTANT_SOUND_MAX_DELAY := 30.0
 const DISTANT_SOUND_MIN_DISTANCE := 20.0
@@ -33,7 +33,7 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 ]
 
 @export_group("Audio")
-@export_range(-60.0, 0.0, 0.5) var recorder_noise_volume_db: float = -12.0
+@export_range(-60.0, 0.0, 0.5) var recorder_noise_volume_db: float = -16.0
 
 @onready var players: Node3D = $Players
 @onready var player_spawner: MultiplayerSpawner = $MultiplayerSpawner

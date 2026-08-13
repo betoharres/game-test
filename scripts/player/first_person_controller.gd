@@ -27,6 +27,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 1.0, 0.01) var exhaustion_vignette_strength: float = 0.6
 @export_range(0.0, 3.0, 0.05) var exhaustion_vignette_fade_in_duration: float = 0.45
 @export_range(0.0, 3.0, 0.05) var exhaustion_vignette_fade_out_duration: float = 0.9
+@export_range(0.0, 3.0, 0.05) var sprint_noise_fade_in_duration: float = 0.35
+@export_range(0.0, 3.0, 0.05) var sprint_noise_fade_out_duration: float = 0.2
 
 @export_group("Footsteps")
 @export_range(0.1, 1.0, 0.01) var walk_step_interval: float = 0.44
@@ -67,6 +69,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @onready var screen_filter: ColorRect = $VHSScreenEffect/ScreenFilter
 @onready var screen_effect_material: ShaderMaterial = screen_filter.material
 @onready var sprint_noise_effect: CanvasLayer = $SprintVHSNoiseEffect
+@onready var sprint_noise_filter: ColorRect = $SprintVHSNoiseEffect/ScreenFilter
+@onready var sprint_noise_material: ShaderMaterial = sprint_noise_filter.material
 @onready var heartbeat_player: AudioStreamPlayer = $HeartbeatPlayer
 @onready var footstep_players: Array[AudioStreamPlayer] = [
 	$FootstepPlayerA,
@@ -98,6 +102,8 @@ var _footstep_rng := RandomNumberGenerator.new()
 var stamina: float = 0.0
 var _stamina_regeneration_cooldown: float = 0.0
 var _sprint_exhausted: bool = false
+var _sprint_noise_tween: Tween
+var _is_sprint_noise_effect_active := false
 var _exhaustion_vignette_tween: Tween
 var _is_exhaustion_effect_active := false
 var is_crouching: bool = false:
@@ -130,6 +136,7 @@ func _ready() -> void:
 	sprint_noise_effect.visible = false
 	if is_local_player:
 		_configure_fog()
+		sprint_noise_material.set_shader_parameter("effect_opacity", 0.0)
 		screen_effect_material.set_shader_parameter("exhaustion_vignette_strength", 0.0)
 		var heartbeat_stream := heartbeat_player.stream.duplicate() as AudioStreamMP3
 		heartbeat_stream.loop = true
@@ -207,7 +214,7 @@ func _physics_process(delta: float) -> void:
 		and not _sprint_exhausted
 		and stamina > 0.0
 	)
-	sprint_noise_effect.visible = is_sprinting
+	_set_sprint_noise_effect(is_sprinting)
 	_update_stamina(delta, is_sprinting)
 	var target_speed := crouch_speed if is_crouching else (
 		sprint_speed if is_sprinting else walk_speed
@@ -305,6 +312,36 @@ func _update_stamina(delta: float, is_sprinting: bool) -> void:
 		stamina_changed.emit(stamina, sprint_duration)
 		if is_node_ready() and is_multiplayer_authority():
 			_set_exhaustion_effect(is_zero_approx(stamina))
+
+
+func _set_sprint_noise_effect(is_active: bool) -> void:
+	if is_active == _is_sprint_noise_effect_active:
+		return
+
+	_is_sprint_noise_effect_active = is_active
+	if is_active:
+		sprint_noise_effect.visible = true
+
+	if is_instance_valid(_sprint_noise_tween):
+		_sprint_noise_tween.kill()
+
+	var fade_duration := (
+		sprint_noise_fade_in_duration if is_active else sprint_noise_fade_out_duration
+	)
+	_sprint_noise_tween = create_tween()
+	_sprint_noise_tween.tween_property(
+		sprint_noise_material,
+		"shader_parameter/effect_opacity",
+		1.0 if is_active else 0.0,
+		fade_duration
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if not is_active:
+		_sprint_noise_tween.tween_callback(_hide_sprint_noise_effect)
+
+
+func _hide_sprint_noise_effect() -> void:
+	if not _is_sprint_noise_effect_active:
+		sprint_noise_effect.visible = false
 
 
 func _set_exhaustion_effect(is_active: bool) -> void:

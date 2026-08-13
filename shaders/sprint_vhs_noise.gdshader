@@ -3,11 +3,12 @@ render_mode unshaded;
 
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear;
 
+uniform float effect_opacity : hint_range(0.0, 1.0, 0.01) = 0.0;
 uniform float grain_strength : hint_range(0.0, 0.3, 0.005) = 0.1;
-uniform float chroma_noise_strength : hint_range(0.0, 0.2, 0.005) = 0.035;
-uniform float horizontal_jitter_pixels : hint_range(0.0, 4.0, 0.05) = 0.35;
-uniform float static_band_strength : hint_range(0.0, 0.5, 0.01) = 0.14;
-uniform float speck_strength : hint_range(0.0, 0.5, 0.01) = 0.001;
+uniform float chroma_noise_strength : hint_range(0.0, 0.2, 0.005) = 0.0035;
+uniform float horizontal_jitter_pixels : hint_range(0.0, 4.0, 0.05) = 0.035;
+uniform float static_band_strength : hint_range(0.0, 0.5, 0.01) = 0.1;
+uniform float speck_strength : hint_range(0.0, 0.5, 0.01) = 0.0001;
 
 float hash_2d(vec2 value) {
 	vec3 p = fract(vec3(value.xyx) * vec3(0.1031, 0.1030, 0.0973));
@@ -17,6 +18,7 @@ float hash_2d(vec2 value) {
 
 void fragment() {
 	float frame = floor(TIME * 59.94);
+	vec3 original_color = texture(screen_texture, SCREEN_UV).rgb;
 	float row = floor(SCREEN_UV.y * 240.0);
 	float row_noise = hash_2d(vec2(row * 0.731, frame)) * 2.0 - 1.0;
 	float row_jitter = sign(row_noise) * pow(abs(row_noise), 9.0) * horizontal_jitter_pixels;
@@ -44,5 +46,6 @@ void fragment() {
 	screen_color.r += red_noise * chroma_noise_strength;
 	screen_color.b += blue_noise * chroma_noise_strength;
 
-	COLOR = vec4(clamp(screen_color, vec3(0.0), vec3(1.0)), 1.0);
+	vec3 vhs_color = clamp(screen_color, vec3(0.0), vec3(1.0));
+	COLOR = vec4(mix(original_color, vhs_color, effect_opacity), 1.0);
 }
