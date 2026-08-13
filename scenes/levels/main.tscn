@@ -86,10 +86,10 @@ spawn_limit = 4
 [node name="StaminaDisplay" type="Control" parent="HUD" unique_id=479973225]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 540.0
-offset_top = 667.0
-offset_right = 780.0
-offset_bottom = 704.0
+offset_left = 534.0
+offset_top = 604.0
+offset_right = 774.0
+offset_bottom = 641.0
 mouse_filter = 2
 
 [node name="StaminaBar" type="ProgressBar" parent="HUD/StaminaDisplay" unique_id=713857574]
