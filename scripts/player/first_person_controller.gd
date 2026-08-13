@@ -45,6 +45,14 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.1, 5.0, 0.1) var head_bob_frequency: float = 2.0
 @export_range(1.0, 20.0, 0.5) var head_bob_smoothing: float = 10.0
 
+@export_group("Fog")
+@export var fog_enabled: bool = true
+@export_enum("Exponential", "Depth") var fog_mode: int = 1
+@export var fog_light_color: Color = Color(0.008, 0.01, 0.014, 1.0)
+@export_range(0.0, 1.0, 0.001) var fog_density: float = 1.0
+@export_range(0.0, 1000.0, 0.1) var fog_depth_begin: float = 10.0
+@export_range(0.0, 1000.0, 0.1) var fog_depth_end: float = 22.0
+
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var interaction_ray: RayCast3D = $Head/Camera3D/InteractionRay
@@ -105,12 +113,31 @@ func _ready() -> void:
 	body_mesh.visible = not is_local_player
 	screen_filter.visible = is_local_player
 	if is_local_player:
+		_configure_fog()
 		screen_effect_material.set_shader_parameter("exhaustion_vignette_strength", 0.0)
 		var heartbeat_stream := heartbeat_player.stream.duplicate() as AudioStreamMP3
 		heartbeat_stream.loop = true
 		heartbeat_player.stream = heartbeat_stream
 		_footstep_rng.randomize()
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _configure_fog() -> void:
+	if not is_multiplayer_authority():
+		return
+
+	var world_environment := get_world_3d().environment
+	if world_environment == null:
+		return
+
+	var local_environment := world_environment.duplicate() as Environment
+	local_environment.fog_enabled = fog_enabled
+	local_environment.fog_mode = fog_mode
+	local_environment.fog_light_color = fog_light_color
+	local_environment.fog_density = fog_density
+	local_environment.fog_depth_begin = fog_depth_begin
+	local_environment.fog_depth_end = fog_depth_end
+	camera.environment = local_environment
 
 
 func _unhandled_input(event: InputEvent) -> void:
