@@ -11,10 +11,11 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 
 @export_group("Movement")
 @export var walk_speed: float = 2.5
-@export var sprint_speed: float = 5.0
+@export var sprint_speed: float = 3.8
 @export var crouch_speed: float = 1.25
 @export var ground_acceleration: float = 10.0
 @export var air_acceleration: float = 3.0
+@export_range(1.0, 30.0, 0.5) var movement_input_smoothing_speed: float = 10.0
 @export var jump_velocity: float = 6.0
 @export_range(0.8, 2.0, 0.05) var crouch_height: float = 1.1
 @export_range(0.1, 10.0, 0.1) var crouch_transition_speed: float = 4.0
@@ -72,6 +73,7 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 ]
 
 var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_gravity"))
+var _smoothed_movement_input := Vector2.ZERO
 var _pitch: float = 0.0
 var _target_pitch: float = 0.0
 var _target_yaw: float = 0.0
@@ -182,8 +184,16 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var input_direction := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	var local_direction := Vector3(input_direction.x, 0.0, input_direction.y)
-	var movement_direction := (transform.basis * local_direction).normalized()
+	var input_blend := 1.0 - exp(-movement_input_smoothing_speed * delta)
+	_smoothed_movement_input = _smoothed_movement_input.lerp(input_direction, input_blend)
+	if _smoothed_movement_input.distance_squared_to(input_direction) < 0.000001:
+		_smoothed_movement_input = input_direction
+	var local_direction := Vector3(
+		_smoothed_movement_input.x,
+		0.0,
+		_smoothed_movement_input.y
+	)
+	var movement_direction := transform.basis * local_direction
 	_update_crouch_state(Input.is_action_pressed("crouch"))
 	var sprint_held := Input.is_action_pressed("sprint")
 	if not sprint_held:
