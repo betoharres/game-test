@@ -46,6 +46,9 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 0.1, 0.005) var head_bob_horizontal_amount: float = 0.02
 @export_range(0.1, 5.0, 0.1) var head_bob_frequency: float = 2.0
 @export_range(1.0, 20.0, 0.5) var head_bob_smoothing: float = 10.0
+@export_range(0.0, 0.05, 0.001) var idle_sway_vertical_amount: float = 0.016
+@export_range(0.0, 0.05, 0.001) var idle_sway_horizontal_amount: float = 0.022
+@export_range(0.05, 2.0, 0.05) var idle_sway_frequency: float = 0.20
 
 @export_group("Fog")
 @export var fog_enabled: bool = true
@@ -83,6 +86,7 @@ var _collision_capsule: CapsuleShape3D
 var _body_capsule_mesh: CapsuleMesh
 var _standing_clearance_shape: CapsuleShape3D
 var _head_bob_phase: float = 0.0
+var _idle_sway_phase: float = 0.0
 var _zoom_tween: Tween
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
@@ -361,6 +365,13 @@ func _update_camera_bob(delta: float) -> void:
 		var amplitude := minf(movement_ratio, 1.0)
 		target_offset.x = sin(_head_bob_phase * 0.5) * head_bob_horizontal_amount * amplitude
 		target_offset.y = sin(_head_bob_phase) * head_bob_vertical_amount * amplitude
+	elif is_on_floor():
+		_idle_sway_phase = fposmod(
+			_idle_sway_phase + delta * idle_sway_frequency * TAU,
+			TAU
+		)
+		target_offset.x = sin(_idle_sway_phase) * idle_sway_horizontal_amount
+		target_offset.y = sin(_idle_sway_phase * 2.0) * idle_sway_vertical_amount
 
 	var blend := 1.0 - exp(-head_bob_smoothing * delta)
 	camera.position = camera.position.lerp(_default_camera_position + target_offset, blend)
