@@ -45,6 +45,7 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 @onready var backrooms: MeshInstance3D = $Backrooms
 @onready var level_collision_shape: CollisionShape3D = $Backrooms/WallCollision/CollisionShape3D
 @onready var stamina_bar: ProgressBar = $HUD/StaminaDisplay/StaminaBar
+@onready var startup_black_screen: ColorRect = $StartupBlackout/BlackScreen
 
 var _spawn_slots: Dictionary[int, int] = {}
 var _ambient_rng := RandomNumberGenerator.new()
@@ -56,9 +57,6 @@ var _stamina_fade_tween: Tween
 
 func _ready() -> void:
 	_setup_level_collision()
-	_setup_ambient_sound()
-	_setup_recorder_noise()
-	_setup_distant_sounds()
 	player_spawner.spawn_function = _create_player
 	players.child_entered_tree.connect(_on_player_spawned)
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -66,6 +64,13 @@ func _ready() -> void:
 	multiplayer.connected_to_server.connect(_on_connected_to_server)
 	multiplayer.connection_failed.connect(_on_connection_failed)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+
+
+func _on_startup_blackout_finished() -> void:
+	startup_black_screen.hide()
+	_setup_ambient_sound()
+	_setup_recorder_noise()
+	_setup_distant_sounds()
 
 	var options := _parse_startup_options()
 	if not options["error"].is_empty():

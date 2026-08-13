@@ -156,3 +156,23 @@ offset_right = 1.0
 offset_bottom = 8.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.9)
+
+[node name="StartupBlackout" type="CanvasLayer" parent="."]
+layer = 100
+
+[node name="BlackScreen" type="ColorRect" parent="StartupBlackout"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="StartupBlackoutTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+autostart = true
+
+[connection signal="timeout" from="StartupBlackoutTimer" to="." method="_on_startup_blackout_finished"]
