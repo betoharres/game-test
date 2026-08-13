@@ -3,12 +3,12 @@ render_mode unshaded;
 
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_linear_mipmap;
 
-uniform float luma_lines : hint_range(180.0, 480.0, 1.0) = 240.0;
+uniform float luma_lines : hint_range(180.0, 480.0, 1.0) = 360.0;
 uniform float chroma_samples : hint_range(48.0, 240.0, 1.0) = 96.0;
 uniform float chroma_lines : hint_range(60.0, 240.0, 1.0) = 120.0;
-uniform float source_softness_lod : hint_range(0.0, 3.0, 0.05) = 1.25;
-uniform float horizontal_softness : hint_range(0.0, 1.5, 0.05) = 0.9;
-uniform float vertical_softness : hint_range(0.0, 1.0, 0.05) = 0.35;
+uniform float source_softness_lod : hint_range(0.0, 3.0, 0.05) = 0.5;
+uniform float horizontal_softness : hint_range(0.0, 1.5, 0.05) = 0.6;
+uniform float vertical_softness : hint_range(0.0, 1.0, 0.05) = 0.25;
 
 uniform float chroma_bleed : hint_range(0.0, 1.0, 0.01) = 0.78;
 uniform float saturation : hint_range(0.5, 2.0, 0.01) = 1.35;
@@ -30,7 +30,7 @@ uniform float exposure : hint_range(0.8, 1.5, 0.01) = 1.08;
 uniform float exposure_pump : hint_range(0.0, 0.15, 0.005) = 0.035;
 uniform float vignette_strength : hint_range(0.0, 0.5, 0.01) = 0.12;
 uniform float exhaustion_vignette_strength : hint_range(0.0, 1.0, 0.01) = 0.0;
-uniform float fish_eye_strength : hint_range(0.0, 0.35, 0.005) = 0.14;
+uniform float fish_eye_strength : hint_range(0.0, 0.35, 0.005) = 0.18;
 
 float hash_1d(float value) {
 	return fract(sin(value * 127.1) * 43758.5453123);

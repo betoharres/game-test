@@ -66,6 +66,7 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 @onready var screen_filter: ColorRect = $VHSScreenEffect/ScreenFilter
 @onready var screen_effect_material: ShaderMaterial = screen_filter.material
+@onready var sprint_noise_effect: CanvasLayer = $SprintVHSNoiseEffect
 @onready var heartbeat_player: AudioStreamPlayer = $HeartbeatPlayer
 @onready var footstep_players: Array[AudioStreamPlayer] = [
 	$FootstepPlayerA,
@@ -126,6 +127,7 @@ func _ready() -> void:
 	interaction_ray.enabled = is_local_player
 	body_mesh.visible = not is_local_player
 	screen_filter.visible = is_local_player
+	sprint_noise_effect.visible = false
 	if is_local_player:
 		_configure_fog()
 		screen_effect_material.set_shader_parameter("exhaustion_vignette_strength", 0.0)
@@ -205,6 +207,7 @@ func _physics_process(delta: float) -> void:
 		and not _sprint_exhausted
 		and stamina > 0.0
 	)
+	sprint_noise_effect.visible = is_sprinting
 	_update_stamina(delta, is_sprinting)
 	var target_speed := crouch_speed if is_crouching else (
 		sprint_speed if is_sprinting else walk_speed

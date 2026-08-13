@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://qjxe1p841n13" path="res://scripts/levels/main.gd" id="1_main"]
 [ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
 [ext_resource type="AudioStream" uid="uid://dgt6qjp3djryf" path="res://sounds/ambient/fluorescent-lamp.mp3" id="4_ambient"]
+[ext_resource type="AudioStream" uid="uid://b0jkqwjvm7uge" path="res://sounds/ambient/vhs-background.ogg" id="5_recorder_noise"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -40,6 +41,9 @@ environment = SubResource("Environment_main")
 [node name="AmbientSound" type="AudioStreamPlayer" parent="." unique_id=581182445]
 stream = ExtResource("4_ambient")
 volume_db = -8.0
+
+[node name="RecorderNoise" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_recorder_noise")
 
 [node name="AmbientVariationTimer" type="Timer" parent="." unique_id=1876990507]
 wait_time = 12.0

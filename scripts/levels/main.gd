@@ -32,9 +32,13 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 	Vector3(3.0, 0.05, 3.0),
 ]
 
+@export_group("Audio")
+@export_range(-60.0, 0.0, 0.5) var recorder_noise_volume_db: float = -12.0
+
 @onready var players: Node3D = $Players
 @onready var player_spawner: MultiplayerSpawner = $MultiplayerSpawner
 @onready var ambient_sound: AudioStreamPlayer = $AmbientSound
+@onready var recorder_noise: AudioStreamPlayer = $RecorderNoise
 @onready var ambient_variation_timer: Timer = $AmbientVariationTimer
 @onready var distant_sound: AudioStreamPlayer3D = $DistantSound
 @onready var distant_sound_timer: Timer = $DistantSoundTimer
@@ -53,6 +57,7 @@ var _stamina_fade_tween: Tween
 func _ready() -> void:
 	_setup_level_collision()
 	_setup_ambient_sound()
+	_setup_recorder_noise()
 	_setup_distant_sounds()
 	player_spawner.spawn_function = _create_player
 	players.child_entered_tree.connect(_on_player_spawned)
@@ -133,6 +138,17 @@ func _setup_ambient_sound() -> void:
 	ambient_variation_timer.start()
 
 
+func _setup_recorder_noise() -> void:
+	var recorder_stream := recorder_noise.stream.duplicate() as AudioStreamOggVorbis
+	recorder_stream.loop = true
+	recorder_noise.stream = recorder_stream
+	recorder_noise.volume_db = recorder_noise_volume_db
+	if DisplayServer.get_name() == "headless":
+		return
+
+	recorder_noise.play()
+
+
 func _vary_ambient_sound() -> void:
 	var tween := create_tween().set_parallel()
 	tween.tween_property(
@@ -211,6 +227,8 @@ func _exit_tree() -> void:
 	ambient_variation_timer.stop()
 	ambient_sound.stop()
 	ambient_sound.stream = null
+	recorder_noise.stop()
+	recorder_noise.stream = null
 	distant_sound_timer.stop()
 	distant_sound.stop()
 	distant_sound.stream = null
