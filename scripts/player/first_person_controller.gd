@@ -27,8 +27,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 1.0, 0.01) var exhaustion_vignette_strength: float = 0.6
 @export_range(0.0, 3.0, 0.05) var exhaustion_vignette_fade_in_duration: float = 0.45
 @export_range(0.0, 3.0, 0.05) var exhaustion_vignette_fade_out_duration: float = 0.9
-@export_range(0.0, 3.0, 0.05) var sprint_noise_fade_in_duration: float = 0.35
-@export_range(0.0, 3.0, 0.05) var sprint_noise_fade_out_duration: float = 0.2
+@export_range(0.0, 3.0, 0.05) var sprint_noise_fade_in_duration: float = 0.45
+@export_range(0.0, 3.0, 0.05) var sprint_noise_fade_out_duration: float = 1.2
 
 @export_group("Footsteps")
 @export_range(0.1, 1.0, 0.01) var walk_step_interval: float = 0.44
@@ -85,10 +85,10 @@ var _target_yaw: float = 0.0
 var _default_camera_fov: float
 var _default_camera_position: Vector3
 var _standing_head_position: Vector3
-var _target_head_position: Vector3
 var _standing_collision_position: Vector3
 var _standing_body_position: Vector3
 var _standing_height: float
+var _target_stance_height: float
 var _collision_capsule: CapsuleShape3D
 var _body_capsule_mesh: CapsuleMesh
 var _standing_clearance_shape: CapsuleShape3D
@@ -204,6 +204,7 @@ func _physics_process(delta: float) -> void:
 	)
 	var movement_direction := transform.basis * local_direction
 	_update_crouch_state(Input.is_action_pressed("crouch"))
+	_update_crouch_transition(delta)
 	var sprint_held := Input.is_action_pressed("sprint")
 	if not sprint_held:
 		_sprint_exhausted = false
@@ -231,7 +232,6 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= _gravity * delta
 
 	move_and_slide()
-	_update_crouch_camera(delta)
 	_update_footsteps(delta, not input_direction.is_zero_approx(), is_sprinting)
 	_update_camera_bob(delta)
 
@@ -251,7 +251,7 @@ func _cache_stance_geometry() -> void:
 	_standing_collision_position = collision_shape.position
 	_standing_body_position = body_mesh.position
 	_standing_head_position = head.position
-	_target_head_position = _standing_head_position
+	_target_stance_height = _standing_height
 
 
 func _update_crouch_state(crouch_requested: bool) -> void:
@@ -270,20 +270,29 @@ func _can_stand() -> bool:
 	return get_world_3d().direct_space_state.intersect_shape(query, 1).is_empty()
 
 
-func _apply_stance(crouching: bool, snap_head: bool = false) -> void:
-	var target_height := maxf(crouch_height, _collision_capsule.radius * 2.0) if crouching else _standing_height
-	var height_difference := _standing_height - target_height
-	_collision_capsule.height = target_height
+func _apply_stance(crouching: bool, snap_transition: bool = false) -> void:
+	_target_stance_height = (
+		maxf(crouch_height, _collision_capsule.radius * 2.0) if crouching else _standing_height
+	)
+	if snap_transition:
+		_set_stance_height(_target_stance_height)
+
+
+func _update_crouch_transition(delta: float) -> void:
+	var blend := 1.0 - exp(-crouch_transition_speed * delta)
+	var height := lerpf(_collision_capsule.height, _target_stance_height, blend)
+	if absf(height - _target_stance_height) < 0.001:
+		height = _target_stance_height
+	_set_stance_height(height)
+
+
+func _set_stance_height(height: float) -> void:
+	var height_difference := _standing_height - height
+	_collision_capsule.height = height
 	collision_shape.position = _standing_collision_position - Vector3.UP * height_difference * 0.5
-	_body_capsule_mesh.height = target_height
+	_body_capsule_mesh.height = height
 	body_mesh.position = _standing_body_position - Vector3.UP * height_difference * 0.5
-	_target_head_position = _standing_head_position - Vector3.UP * height_difference
-	if snap_head:
-		head.position = _target_head_position
-
-
-func _update_crouch_camera(delta: float) -> void:
-	head.position = head.position.move_toward(_target_head_position, crouch_transition_speed * delta)
+	head.position = _standing_head_position - Vector3.UP * height_difference
 
 
 func _update_stamina(delta: float, is_sprinting: bool) -> void:

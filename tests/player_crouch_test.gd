@@ -23,10 +23,19 @@ func test_crouch_action_uses_control_key() -> void:
 
 
 func test_player_crouches_only_while_action_is_held() -> void:
+	var standing_height := (_controller.collision_shape.shape as CapsuleShape3D).height
 	Input.action_press("crouch")
 	_controller._update_crouch_state(Input.is_action_pressed("crouch"))
+	_controller._update_crouch_transition(0.1)
 
 	assert_true(_controller.is_crouching)
+	assert_true(
+		(_controller.collision_shape.shape as CapsuleShape3D).height < standing_height
+	)
+	assert_true(
+		(_controller.collision_shape.shape as CapsuleShape3D).height > _controller.crouch_height
+	)
+	_controller._update_crouch_transition(2.0)
 	assert_true(
 		is_equal_approx(
 			(_controller.collision_shape.shape as CapsuleShape3D).height,
@@ -36,8 +45,15 @@ func test_player_crouches_only_while_action_is_held() -> void:
 
 	Input.action_release("crouch")
 	_controller._update_crouch_state(Input.is_action_pressed("crouch"))
+	_controller._update_crouch_transition(0.1)
 
 	assert_false(_controller.is_crouching)
+	assert_true(
+		(_controller.collision_shape.shape as CapsuleShape3D).height > _controller.crouch_height
+	)
+	assert_true(
+		(_controller.collision_shape.shape as CapsuleShape3D).height < standing_height
+	)
 
 
 func test_crouching_reduces_footstep_volume() -> void:
