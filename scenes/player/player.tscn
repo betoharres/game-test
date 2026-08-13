@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/first_person_controller.gd" id="1_controller"]
-[ext_resource type="PackedScene" uid="uid://bvocpbw48suwn" path="res://scenes/effects/retro_screen_effect.tscn" id="2_retro"]
+[ext_resource type="PackedScene" path="res://scenes/effects/vhs_screen_effect.tscn" id="2_vhs"]
 [ext_resource type="AudioStream" uid="uid://dttt3sfsg3kb6" path="res://sounds/character/deep-heartbeat.mp3" id="3_heartbeat"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
@@ -70,4 +70,4 @@ target_position = Vector3(0, 0, -3)
 collision_mask = 1
 collide_with_areas = true
 
-[node name="RetroScreenEffect" parent="." instance=ExtResource("2_retro")]
+[node name="VHSScreenEffect" parent="." instance=ExtResource("2_vhs")]

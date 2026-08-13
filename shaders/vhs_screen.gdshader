@@ -29,6 +29,7 @@ uniform float tracking_shift_pixels : hint_range(0.0, 12.0, 0.25) = 4.0;
 uniform float exposure : hint_range(0.8, 1.5, 0.01) = 1.08;
 uniform float exposure_pump : hint_range(0.0, 0.15, 0.005) = 0.035;
 uniform float vignette_strength : hint_range(0.0, 0.5, 0.01) = 0.12;
+uniform float exhaustion_vignette_strength : hint_range(0.0, 1.0, 0.01) = 0.0;
 uniform float lens_distortion : hint_range(0.0, 0.02, 0.0005) = 0.003;
 
 float hash_1d(float value) {
@@ -229,7 +230,9 @@ void fragment() {
 	float line_structure = (mod(floor(FRAGCOORD.y), 2.0) - 0.5) * 0.006;
 	screen_color *= 1.0 + line_structure;
 	float vignette = 1.0 - smoothstep(0.48, 1.42, length(centered_uv));
-	screen_color *= mix(1.0, vignette, vignette_strength);
+	float exhaustion_vignette = 1.0 - smoothstep(0.25, 1.0, length(centered_uv));
+	screen_color *= mix(1.0, vignette, vignette_strength)
+		* mix(1.0, exhaustion_vignette, exhaustion_vignette_strength);
 
 	COLOR = vec4(clamp(screen_color, vec3(0.0), vec3(1.0)), 1.0);
 }
