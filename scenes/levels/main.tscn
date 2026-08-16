@@ -42,7 +42,7 @@ environment = SubResource("Environment_main")
 stream = ExtResource("4_ambient")
 volume_db = -8.0
 
-[node name="RecorderNoise" type="AudioStreamPlayer" parent="."]
+[node name="RecorderNoise" type="AudioStreamPlayer" parent="." unique_id=1700639668]
 stream = ExtResource("5_recorder_noise")
 
 [node name="AmbientVariationTimer" type="Timer" parent="." unique_id=1876990507]
@@ -157,11 +157,10 @@ offset_bottom = 8.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.9)
 
-[node name="StartupBlackout" type="CanvasLayer" parent="."]
+[node name="StartupBlackout" type="CanvasLayer" parent="." unique_id=1445558066]
 layer = 100
 
-[node name="BlackScreen" type="ColorRect" parent="StartupBlackout"]
-layout_mode = 3
+[node name="BlackScreen" type="ColorRect" parent="StartupBlackout" unique_id=2010497139]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -170,7 +169,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="StartupBlackoutTimer" type="Timer" parent="."]
+[node name="StartupBlackoutTimer" type="Timer" parent="." unique_id=1882017212]
 wait_time = 2.0
 one_shot = true
 autostart = true

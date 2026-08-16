@@ -71,6 +71,8 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.1, 5.0, 0.1) var head_bob_frequency: float = 2.0
 ## Bob responsiveness; higher values feel sharper and lower values feel floatier.
 @export_range(1.0, 20.0, 0.5) var head_bob_smoothing: float = 10.0
+## Multiplier applied to movement bob while stamina is empty.
+@export_range(1.0, 3.0, 0.05) var exhaustion_bob_multiplier: float = 2.2
 ## Forward and backward camera nod in degrees while walking.
 @export_range(0.0, 3.0, 0.05) var walk_bob_pitch_amount: float = 0.25
 ## Sideways camera tilt in degrees while walking.
@@ -498,6 +500,9 @@ func _update_camera_motion(delta: float, is_sprinting: bool, lean_input: float) 
 			TAU * 2.0
 		)
 		var amplitude := minf(movement_ratio, 1.0)
+		var exhaustion_multiplier := (
+			exhaustion_bob_multiplier if is_zero_approx(stamina) else 1.0
+		)
 		var horizontal_wave := sin(_head_bob_phase * 0.5)
 		var impact_sharpness := lerpf(
 			walk_bob_impact_sharpness,
@@ -519,9 +524,19 @@ func _update_camera_motion(delta: float, is_sprinting: bool, lean_input: float) 
 			_sprint_bob_weight
 		)
 		target_offset.x = (
-			horizontal_wave * head_bob_horizontal_amount * horizontal_multiplier * amplitude
+			horizontal_wave
+			* head_bob_horizontal_amount
+			* horizontal_multiplier
+			* amplitude
+			* exhaustion_multiplier
 		)
-		target_offset.y = vertical_wave * head_bob_vertical_amount * vertical_multiplier * amplitude
+		target_offset.y = (
+			vertical_wave
+			* head_bob_vertical_amount
+			* vertical_multiplier
+			* amplitude
+			* exhaustion_multiplier
+		)
 		var pitch_amount := lerpf(
 			walk_bob_pitch_amount,
 			sprint_bob_pitch_amount,
@@ -533,9 +548,11 @@ func _update_camera_motion(delta: float, is_sprinting: bool, lean_input: float) 
 			_sprint_bob_weight
 		)
 		target_rotation += Vector3(
-			deg_to_rad(vertical_wave * pitch_amount * amplitude),
+			deg_to_rad(
+				vertical_wave * pitch_amount * amplitude * exhaustion_multiplier
+			),
 			0.0,
-			deg_to_rad(-horizontal_wave * roll_amount * amplitude)
+			deg_to_rad(-horizontal_wave * roll_amount * amplitude * exhaustion_multiplier)
 		)
 	elif is_on_floor():
 		_idle_sway_phase = fposmod(
