@@ -45,10 +45,25 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 89.0, 1.0) var maximum_look_angle: float = 89.0
 @export_range(0.0, 0.9, 0.01) var zoom_amount: float = 0.6
 @export_range(0.1, 10.0, 0.1) var zoom_duration: float = 0.7
+
+@export_group("Walking Camera Bob")
 @export_range(0.0, 0.1, 0.005) var head_bob_vertical_amount: float = 0.035
 @export_range(0.0, 0.1, 0.005) var head_bob_horizontal_amount: float = 0.02
 @export_range(0.1, 5.0, 0.1) var head_bob_frequency: float = 2.0
 @export_range(1.0, 20.0, 0.5) var head_bob_smoothing: float = 10.0
+@export_range(0.0, 3.0, 0.05) var walk_bob_pitch_amount: float = 0.25
+@export_range(0.0, 5.0, 0.05) var walk_bob_roll_amount: float = 0.45
+@export_range(0.0, 0.5, 0.01) var walk_bob_impact_sharpness: float = 0.1
+
+@export_group("Sprint Camera Bob")
+@export_range(1.0, 3.0, 0.05) var sprint_bob_vertical_multiplier: float = 1.8
+@export_range(1.0, 3.0, 0.05) var sprint_bob_horizontal_multiplier: float = 1.4
+@export_range(0.0, 5.0, 0.05) var sprint_bob_pitch_amount: float = 0.9
+@export_range(0.0, 8.0, 0.05) var sprint_bob_roll_amount: float = 1.25
+@export_range(0.0, 0.5, 0.01) var sprint_bob_impact_sharpness: float = 0.25
+@export_range(0.1, 20.0, 0.1) var sprint_bob_transition_speed: float = 7.0
+
+@export_group("Idle Camera Sway")
 @export_range(0.0, 0.05, 0.001) var idle_sway_vertical_amount: float = 0.016
 @export_range(0.0, 0.05, 0.001) var idle_sway_horizontal_amount: float = 0.022
 @export_range(0.05, 2.0, 0.05) var idle_sway_frequency: float = 0.20
@@ -103,6 +118,7 @@ var _standing_clearance_shape: CapsuleShape3D
 var _head_bob_phase: float = 0.0
 var _idle_sway_phase: float = 0.0
 var _handheld_sway_phase: float = 0.0
+var _sprint_bob_weight: float = 0.0
 var _zoom_tween: Tween
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
@@ -243,7 +259,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_footsteps(delta, not input_direction.is_zero_approx(), is_sprinting)
-	_update_camera_bob(delta)
+	_update_camera_bob(delta, is_sprinting)
 
 
 func _cache_stance_geometry() -> void:
@@ -422,19 +438,62 @@ func _play_footstep() -> void:
 	footstep_player.play()
 
 
-func _update_camera_bob(delta: float) -> void:
+func _update_camera_bob(delta: float, is_sprinting: bool) -> void:
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var movement_ratio := horizontal_speed / maxf(walk_speed, 0.001)
 	var target_offset := Vector3.ZERO
 	var target_rotation := _default_camera_rotation
+	var sprint_blend := 1.0 - exp(-sprint_bob_transition_speed * delta)
+	_sprint_bob_weight = lerpf(
+		_sprint_bob_weight,
+		1.0 if is_sprinting else 0.0,
+		sprint_blend
+	)
 	if is_on_floor() and horizontal_speed >= 0.1:
 		_head_bob_phase = fposmod(
 			_head_bob_phase + delta * head_bob_frequency * TAU * movement_ratio,
 			TAU * 2.0
 		)
 		var amplitude := minf(movement_ratio, 1.0)
-		target_offset.x = sin(_head_bob_phase * 0.5) * head_bob_horizontal_amount * amplitude
-		target_offset.y = sin(_head_bob_phase) * head_bob_vertical_amount * amplitude
+		var horizontal_wave := sin(_head_bob_phase * 0.5)
+		var impact_sharpness := lerpf(
+			walk_bob_impact_sharpness,
+			sprint_bob_impact_sharpness,
+			_sprint_bob_weight
+		)
+		var vertical_wave := (
+			sin(_head_bob_phase)
+			- impact_sharpness * sin(_head_bob_phase * 2.0)
+		)
+		var vertical_multiplier := lerpf(
+			1.0,
+			sprint_bob_vertical_multiplier,
+			_sprint_bob_weight
+		)
+		var horizontal_multiplier := lerpf(
+			1.0,
+			sprint_bob_horizontal_multiplier,
+			_sprint_bob_weight
+		)
+		target_offset.x = (
+			horizontal_wave * head_bob_horizontal_amount * horizontal_multiplier * amplitude
+		)
+		target_offset.y = vertical_wave * head_bob_vertical_amount * vertical_multiplier * amplitude
+		var pitch_amount := lerpf(
+			walk_bob_pitch_amount,
+			sprint_bob_pitch_amount,
+			_sprint_bob_weight
+		)
+		var roll_amount := lerpf(
+			walk_bob_roll_amount,
+			sprint_bob_roll_amount,
+			_sprint_bob_weight
+		)
+		target_rotation += Vector3(
+			deg_to_rad(vertical_wave * pitch_amount * amplitude),
+			0.0,
+			deg_to_rad(-horizontal_wave * roll_amount * amplitude)
+		)
 	elif is_on_floor():
 		_idle_sway_phase = fposmod(
 			_idle_sway_phase + delta * idle_sway_frequency * TAU,
@@ -465,7 +524,10 @@ func _update_camera_bob(delta: float) -> void:
 		)
 
 	var position_blend := 1.0 - exp(-head_bob_smoothing * delta)
-	var rotation_blend := 1.0 - exp(-handheld_sway_smoothing * delta)
+	var rotation_smoothing := (
+		head_bob_smoothing if horizontal_speed >= 0.1 else handheld_sway_smoothing
+	)
+	var rotation_blend := 1.0 - exp(-rotation_smoothing * delta)
 	camera.position = camera.position.lerp(_default_camera_position + target_offset, position_blend)
 	camera.rotation = camera.rotation.lerp(target_rotation, rotation_blend)
 
