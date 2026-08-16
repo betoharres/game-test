@@ -119,7 +119,7 @@ theme_override_constants/shadow_offset_x = 2
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
 text = "WASD  Move    Shift  Sprint    Space  Jump
-Hold Ctrl  Crouch    Mouse  Look    Right Click  Zoom
+Hold Ctrl  Crouch    Hold Q/E  Lean    Mouse  Look    Right Click  Zoom
 Escape  Release mouse    Left Click  Capture mouse"
 
 [node name="Crosshair" type="Control" parent="HUD" unique_id=357753696]

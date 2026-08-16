@@ -46,21 +46,50 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 0.9, 0.01) var zoom_amount: float = 0.6
 @export_range(0.1, 10.0, 0.1) var zoom_duration: float = 0.7
 
+@export_group("Camera Lean")
+## Sideways camera displacement in meters at full lean.
+@export_range(0.0, 0.5, 0.01) var lean_horizontal_amount: float = 0.18
+## Downward camera displacement in meters at full lean.
+@export_range(0.0, 0.2, 0.005) var lean_vertical_drop: float = 0.025
+## Camera tilt in degrees at full lean.
+@export_range(0.0, 20.0, 0.5) var lean_roll_amount: float = 7.0
+## Lean responsiveness; higher values enter and leave the lean more quickly.
+@export_range(1.0, 20.0, 0.5) var lean_transition_speed: float = 8.0
+## Sideways balance sway in meters while leaning.
+@export_range(0.0, 0.05, 0.001) var lean_sway_position_amount: float = 0.008
+## Additional balance sway in degrees while leaning.
+@export_range(0.0, 2.0, 0.05) var lean_sway_roll_amount: float = 0.35
+## Speed of the balance sway while leaning.
+@export_range(0.05, 3.0, 0.05) var lean_sway_frequency: float = 0.9
+
 @export_group("Walking Camera Bob")
+## Vertical camera displacement in meters; higher values create more bounce.
 @export_range(0.0, 0.1, 0.005) var head_bob_vertical_amount: float = 0.035
+## Side-to-side camera displacement in meters; higher values create a wider sway.
 @export_range(0.0, 0.1, 0.005) var head_bob_horizontal_amount: float = 0.02
+## Base stride cadence; higher values make walking and sprinting bob faster.
 @export_range(0.1, 5.0, 0.1) var head_bob_frequency: float = 2.0
+## Bob responsiveness; higher values feel sharper and lower values feel floatier.
 @export_range(1.0, 20.0, 0.5) var head_bob_smoothing: float = 10.0
+## Forward and backward camera nod in degrees while walking.
 @export_range(0.0, 3.0, 0.05) var walk_bob_pitch_amount: float = 0.25
+## Sideways camera tilt in degrees while walking.
 @export_range(0.0, 5.0, 0.05) var walk_bob_roll_amount: float = 0.45
+## Footfall shape; zero is smooth and higher values create a sharper downward step.
 @export_range(0.0, 0.5, 0.01) var walk_bob_impact_sharpness: float = 0.1
 
 @export_group("Sprint Camera Bob")
+## Multiplier applied to the walking vertical displacement at full sprint.
 @export_range(1.0, 3.0, 0.05) var sprint_bob_vertical_multiplier: float = 1.8
+## Multiplier applied to the walking side-to-side displacement at full sprint.
 @export_range(1.0, 3.0, 0.05) var sprint_bob_horizontal_multiplier: float = 1.4
+## Forward and backward camera nod in degrees at full sprint.
 @export_range(0.0, 5.0, 0.05) var sprint_bob_pitch_amount: float = 0.9
+## Sideways camera tilt in degrees at full sprint.
 @export_range(0.0, 8.0, 0.05) var sprint_bob_roll_amount: float = 1.25
+## Running footfall shape; higher values create a heavier, sharper impact.
 @export_range(0.0, 0.5, 0.01) var sprint_bob_impact_sharpness: float = 0.25
+## Walk-to-sprint blend speed; higher values transition more quickly.
 @export_range(0.1, 20.0, 0.1) var sprint_bob_transition_speed: float = 7.0
 
 @export_group("Idle Camera Sway")
@@ -119,6 +148,8 @@ var _head_bob_phase: float = 0.0
 var _idle_sway_phase: float = 0.0
 var _handheld_sway_phase: float = 0.0
 var _sprint_bob_weight: float = 0.0
+var _lean_amount: float = 0.0
+var _lean_sway_phase: float = 0.0
 var _zoom_tween: Tween
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
@@ -259,7 +290,8 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 	_update_footsteps(delta, not input_direction.is_zero_approx(), is_sprinting)
-	_update_camera_bob(delta, is_sprinting)
+	var lean_input := Input.get_axis("lean_left", "lean_right")
+	_update_camera_motion(delta, is_sprinting, lean_input)
 
 
 func _cache_stance_geometry() -> void:
@@ -438,11 +470,22 @@ func _play_footstep() -> void:
 	footstep_player.play()
 
 
-func _update_camera_bob(delta: float, is_sprinting: bool) -> void:
+func _update_camera_motion(delta: float, is_sprinting: bool, lean_input: float) -> void:
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var movement_ratio := horizontal_speed / maxf(walk_speed, 0.001)
 	var target_offset := Vector3.ZERO
 	var target_rotation := _default_camera_rotation
+	var lean_blend := 1.0 - exp(-lean_transition_speed * delta)
+	_lean_amount = lerpf(_lean_amount, clampf(lean_input, -1.0, 1.0), lean_blend)
+	if absf(_lean_amount - lean_input) < 0.001:
+		_lean_amount = lean_input
+	if is_zero_approx(_lean_amount):
+		_lean_sway_phase = 0.0
+	else:
+		_lean_sway_phase = fposmod(
+			_lean_sway_phase + delta * lean_sway_frequency * TAU,
+			TAU
+		)
 	var sprint_blend := 1.0 - exp(-sprint_bob_transition_speed * delta)
 	_sprint_bob_weight = lerpf(
 		_sprint_bob_weight,
@@ -523,10 +566,22 @@ func _update_camera_bob(delta: float, is_sprinting: bool) -> void:
 			deg_to_rad(roll_sway * handheld_sway_roll_amount)
 		)
 
+	var lean_sway := sin(_lean_sway_phase) * absf(_lean_amount)
+	target_offset.x += (
+		_lean_amount * lean_horizontal_amount
+		+ lean_sway * lean_sway_position_amount
+	)
+	target_offset.y -= absf(_lean_amount) * lean_vertical_drop
+	target_rotation.z += deg_to_rad(
+		-_lean_amount * lean_roll_amount
+		+ lean_sway * lean_sway_roll_amount
+	)
+
 	var position_blend := 1.0 - exp(-head_bob_smoothing * delta)
 	var rotation_smoothing := (
 		head_bob_smoothing if horizontal_speed >= 0.1 else handheld_sway_smoothing
 	)
+	rotation_smoothing = maxf(rotation_smoothing, lean_transition_speed)
 	var rotation_blend := 1.0 - exp(-rotation_smoothing * delta)
 	camera.position = camera.position.lerp(_default_camera_position + target_offset, position_blend)
 	camera.rotation = camera.rotation.lerp(target_rotation, rotation_blend)
