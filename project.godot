@@ -23,6 +23,10 @@ window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 
+[global_group]
+
+detectable_sound_emitters="Sound sources that can alert enemies through a current_sound_radius property."
+
 [input]
 
 move_forward={

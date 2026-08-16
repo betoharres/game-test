@@ -2,6 +2,7 @@ class_name FirstPersonController
 extends CharacterBody3D
 
 signal stamina_changed(current_stamina: float, maximum_stamina: float)
+signal sound_radius_changed(current_radius: float, maximum_radius: float)
 
 const FOOTSTEP_STREAMS: Array[AudioStream] = [
 	preload("res://sounds/footsteps/data_pion-st1-footstep-sfx-323053.mp3"),
@@ -37,6 +38,14 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 20.0, 0.5) var crouch_footstep_attenuation_db: float = 10.0
 @export_range(0.0, 6.0, 0.1) var footstep_volume_variation_db: float = 1.5
 @export_range(0.0, 0.25, 0.01) var footstep_pitch_variation: float = 0.05
+
+@export_group("Sound Detection")
+## Enemy hearing radius in meters while moving in a crouch.
+@export_range(0.0, 30.0, 0.5) var crouch_sound_radius: float = 2.0
+## Enemy hearing radius in meters while walking.
+@export_range(0.0, 30.0, 0.5) var walk_sound_radius: float = 5.0
+## Enemy hearing radius in meters while sprinting.
+@export_range(0.0, 30.0, 0.5) var sprint_sound_radius: float = 9.0
 
 @export_group("Camera")
 @export_range(0.01, 1.0, 0.01) var mouse_sensitivity: float = 0.08
@@ -158,6 +167,13 @@ var _next_footstep_player: int = 0
 var _next_footstep_stream: int = 0
 var _footstep_rng := RandomNumberGenerator.new()
 var stamina: float = 0.0
+var current_sound_radius: float = 0.0:
+	set(value):
+		var clamped_radius := clampf(value, 0.0, get_max_sound_radius())
+		if is_equal_approx(current_sound_radius, clamped_radius):
+			return
+		current_sound_radius = clamped_radius
+		sound_radius_changed.emit(current_sound_radius, get_max_sound_radius())
 var _stamina_regeneration_cooldown: float = 0.0
 var _sprint_exhausted: bool = false
 var _sprint_noise_tween: Tween
@@ -291,6 +307,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= _gravity * delta
 
 	move_and_slide()
+	_update_sound_radius(not input_direction.is_zero_approx(), is_sprinting)
 	_update_footsteps(delta, not input_direction.is_zero_approx(), is_sprinting)
 	var lean_input := Input.get_axis("lean_left", "lean_right")
 	_update_camera_motion(delta, is_sprinting, lean_input)
@@ -439,6 +456,33 @@ func _set_exhaustion_effect(is_active: bool) -> void:
 		target_strength,
 		fade_duration
 	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func get_max_sound_radius() -> float:
+	return maxf(crouch_sound_radius, maxf(walk_sound_radius, sprint_sound_radius))
+
+
+func _get_movement_sound_radius(
+	has_movement_input: bool,
+	is_grounded: bool,
+	is_sprinting: bool
+) -> float:
+	if not has_movement_input or not is_grounded:
+		return 0.0
+	if is_sprinting:
+		return sprint_sound_radius
+	if is_crouching:
+		return crouch_sound_radius
+	return walk_sound_radius
+
+
+func _update_sound_radius(has_movement_input: bool, is_sprinting: bool) -> void:
+	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+	current_sound_radius = _get_movement_sound_radius(
+		has_movement_input and horizontal_speed >= 0.1,
+		is_on_floor(),
+		is_sprinting
+	)
 
 
 func _update_footsteps(delta: float, has_movement_input: bool, is_sprinting: bool) -> void:

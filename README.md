@@ -46,6 +46,8 @@ See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet con
 
 Player tuning values are exported on the root of `player.tscn`. The camera includes a three-meter `InteractionRay` ready for interaction logic.
 
+The HUD's hearing-signature meter shows how far the local player's movement can alert enemies. Crouching, walking, and sprinting use separate exported sound radii. Nodes that enemies are allowed to hear belong to the `detectable_sound_emitters` Godot group and expose a `current_sound_radius`; ambient and decorative audio are intentionally not in this group.
+
 ## Tests
 
 The project includes a dependency-free GDScript test runner. Run it from the repository root:

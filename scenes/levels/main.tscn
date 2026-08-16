@@ -4,6 +4,7 @@
 [ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
 [ext_resource type="AudioStream" uid="uid://dgt6qjp3djryf" path="res://sounds/ambient/fluorescent-lamp.mp3" id="4_ambient"]
 [ext_resource type="AudioStream" uid="uid://b0jkqwjvm7uge" path="res://sounds/ambient/vhs-background.ogg" id="5_recorder_noise"]
+[ext_resource type="Script" path="res://scripts/ui/sound_meter.gd" id="6_sound_meter"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -106,6 +107,44 @@ mouse_filter = 2
 theme_override_styles/background = SubResource("StyleBox_stamina_background")
 theme_override_styles/fill = SubResource("StyleBox_stamina_fill")
 show_percentage = false
+
+[node name="SoundMeter" type="Control" parent="HUD"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -204.0
+offset_top = -116.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("6_sound_meter")
+
+[node name="Title" type="Label" parent="HUD/SoundMeter"]
+layout_mode = 0
+offset_top = 5.0
+offset_right = 180.0
+offset_bottom = 21.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.58, 0.68, 0.65, 1)
+theme_override_font_sizes/font_size = 10
+text = "HEARING SIGNATURE"
+horizontal_alignment = 1
+
+[node name="RadiusLabel" type="Label" parent="HUD/SoundMeter"]
+layout_mode = 0
+offset_top = 67.0
+offset_right = 180.0
+offset_bottom = 87.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.72, 0.82, 0.78, 1)
+theme_override_font_sizes/font_size = 12
+text = "SILENT"
+horizontal_alignment = 1
 
 [node name="Instructions" type="Label" parent="HUD" unique_id=994106319]
 visible = false

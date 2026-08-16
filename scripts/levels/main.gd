@@ -45,6 +45,7 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 @onready var backrooms: MeshInstance3D = $Backrooms
 @onready var level_collision_shape: CollisionShape3D = $Backrooms/WallCollision/CollisionShape3D
 @onready var stamina_bar: ProgressBar = $HUD/StaminaDisplay/StaminaBar
+@onready var sound_meter: SoundMeter = $HUD/SoundMeter
 @onready var startup_black_screen: ColorRect = $StartupBlackout/BlackScreen
 
 var _spawn_slots: Dictionary[int, int] = {}
@@ -388,6 +389,7 @@ func _reset_client_session() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_stop_stamina_fade()
 	stamina_bar.visible = false
+	sound_meter.set_sound_radius(0.0, 1.0)
 	_spawn_slots.clear()
 	for player in players.get_children():
 		player.queue_free()
@@ -400,8 +402,13 @@ func _on_player_spawned(player: Node) -> void:
 		return
 
 	controller.stamina_changed.connect(_on_stamina_changed)
+	controller.sound_radius_changed.connect(_on_sound_radius_changed)
 	if controller.is_node_ready():
 		_on_stamina_changed(controller.stamina, controller.sprint_duration)
+		_on_sound_radius_changed(
+			controller.current_sound_radius,
+			controller.get_max_sound_radius()
+		)
 
 
 func _on_stamina_changed(current_stamina: float, maximum_stamina: float) -> void:
@@ -426,3 +433,7 @@ func _stop_stamina_fade() -> void:
 	if _stamina_fade_tween != null and _stamina_fade_tween.is_valid():
 		_stamina_fade_tween.kill()
 	_stamina_fade_tween = null
+
+
+func _on_sound_radius_changed(current_radius: float, maximum_radius: float) -> void:
+	sound_meter.set_sound_radius(current_radius, maximum_radius)
