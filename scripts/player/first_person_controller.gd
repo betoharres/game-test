@@ -53,6 +53,13 @@ const FOOTSTEP_STREAMS: Array[AudioStream] = [
 @export_range(0.0, 0.05, 0.001) var idle_sway_horizontal_amount: float = 0.022
 @export_range(0.05, 2.0, 0.05) var idle_sway_frequency: float = 0.20
 
+@export_group("Handheld Camera Sway")
+@export_range(0.0, 3.0, 0.05) var handheld_sway_pitch_amount: float = 0.35
+@export_range(0.0, 3.0, 0.05) var handheld_sway_yaw_amount: float = 0.45
+@export_range(0.0, 5.0, 0.05) var handheld_sway_roll_amount: float = 0.6
+@export_range(0.05, 2.0, 0.05) var handheld_sway_frequency: float = 0.15
+@export_range(1.0, 20.0, 0.5) var handheld_sway_smoothing: float = 6.0
+
 @export_group("Fog")
 @export var fog_enabled: bool = true
 @export_enum("Exponential", "Depth") var fog_mode: int = 1
@@ -84,6 +91,7 @@ var _target_pitch: float = 0.0
 var _target_yaw: float = 0.0
 var _default_camera_fov: float
 var _default_camera_position: Vector3
+var _default_camera_rotation: Vector3
 var _standing_head_position: Vector3
 var _standing_collision_position: Vector3
 var _standing_body_position: Vector3
@@ -94,6 +102,7 @@ var _body_capsule_mesh: CapsuleMesh
 var _standing_clearance_shape: CapsuleShape3D
 var _head_bob_phase: float = 0.0
 var _idle_sway_phase: float = 0.0
+var _handheld_sway_phase: float = 0.0
 var _zoom_tween: Tween
 var _footstep_timer: float = 0.0
 var _next_footstep_player: int = 0
@@ -124,6 +133,7 @@ func _ready() -> void:
 	stamina_changed.emit(stamina, sprint_duration)
 	_default_camera_fov = camera.fov
 	_default_camera_position = camera.position
+	_default_camera_rotation = camera.rotation
 	_cache_stance_geometry()
 	_apply_stance(is_crouching, true)
 	set_physics_process(is_local_player)
@@ -416,6 +426,7 @@ func _update_camera_bob(delta: float) -> void:
 	var horizontal_speed := Vector2(velocity.x, velocity.z).length()
 	var movement_ratio := horizontal_speed / maxf(walk_speed, 0.001)
 	var target_offset := Vector3.ZERO
+	var target_rotation := _default_camera_rotation
 	if is_on_floor() and horizontal_speed >= 0.1:
 		_head_bob_phase = fposmod(
 			_head_bob_phase + delta * head_bob_frequency * TAU * movement_ratio,
@@ -431,9 +442,32 @@ func _update_camera_bob(delta: float) -> void:
 		)
 		target_offset.x = sin(_idle_sway_phase) * idle_sway_horizontal_amount
 		target_offset.y = sin(_idle_sway_phase * 2.0) * idle_sway_vertical_amount
+		_handheld_sway_phase = fposmod(
+			_handheld_sway_phase + delta * handheld_sway_frequency * TAU,
+			TAU * 10.0
+		)
+		var pitch_sway := (
+			(sin(_handheld_sway_phase * 0.7) + 0.25 * sin(_handheld_sway_phase * 1.9 + 1.1))
+			/ 1.25
+		)
+		var yaw_sway := (
+			(sin(_handheld_sway_phase * 0.5 + 1.7) + 0.2 * sin(_handheld_sway_phase * 1.3))
+			/ 1.2
+		)
+		var roll_sway := (
+			(sin(_handheld_sway_phase + 2.4) + 0.15 * sin(_handheld_sway_phase * 2.3))
+			/ 1.15
+		)
+		target_rotation += Vector3(
+			deg_to_rad(pitch_sway * handheld_sway_pitch_amount),
+			deg_to_rad(yaw_sway * handheld_sway_yaw_amount),
+			deg_to_rad(roll_sway * handheld_sway_roll_amount)
+		)
 
-	var blend := 1.0 - exp(-head_bob_smoothing * delta)
-	camera.position = camera.position.lerp(_default_camera_position + target_offset, blend)
+	var position_blend := 1.0 - exp(-head_bob_smoothing * delta)
+	var rotation_blend := 1.0 - exp(-handheld_sway_smoothing * delta)
+	camera.position = camera.position.lerp(_default_camera_position + target_offset, position_blend)
+	camera.rotation = camera.rotation.lerp(target_rotation, rotation_blend)
 
 
 func _rotate_camera(mouse_delta: Vector2) -> void:
