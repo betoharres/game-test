@@ -26,6 +26,7 @@ window/stretch/mode="canvas_items"
 [global_group]
 
 detectable_sound_emitters="Sound sources that can alert enemies through a current_sound_radius property."
+players="Player nodes that enemies can detect through vision."
 
 [input]
 

@@ -42,11 +42,14 @@ See [Experimental Multiplayer Tutorial](MULTIPLAYER.md) for LAN and internet con
 - `scenes/levels/main.tscn`: starting level, multiplayer session, and HUD
 - `scenes/effects/retro_screen_effect.tscn`: reusable full-screen retro post-process
 - `scenes/player/player.tscn`: reusable player node tree
+- `scenes/enemies/placeholder_enemy.tscn`: stationary enemy detection placeholder
 - `scripts/player/first_person_controller.gd`: movement and camera controller
 
 Player tuning values are exported on the root of `player.tscn`. The camera includes a three-meter `InteractionRay` ready for interaction logic.
 
 The HUD's hearing-signature meter shows how far the local player's movement can alert enemies. Crouching, walking, and sprinting use separate exported sound radii. Nodes that enemies are allowed to hear belong to the `detectable_sound_emitters` Godot group and expose a `current_sound_radius`; ambient and decorative audio are intentionally not in this group.
+
+The map includes a floating cube enemy with a visible 12-meter vision cone. It is green while relaxed, yellow when it sees a player in the farthest third of its cone or hears one beyond five meters, and red when visual detection is nearer or audible movement is within five meters. World geometry blocks its vision.
 
 ## Tests
 

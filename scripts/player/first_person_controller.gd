@@ -513,6 +513,8 @@ func _play_footstep() -> void:
 		1.0 - footstep_pitch_variation,
 		1.0 + footstep_pitch_variation
 	)
+	if DisplayServer.get_name() == "headless":
+		return
 	footstep_player.play()
 
 

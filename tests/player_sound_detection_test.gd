@@ -18,6 +18,10 @@ func test_player_is_a_detectable_sound_emitter() -> void:
 	assert_true(_controller.is_in_group("detectable_sound_emitters"))
 
 
+func test_player_is_an_enemy_vision_target() -> void:
+	assert_true(_controller.is_in_group("players"))
+
+
 func test_stationary_and_airborne_movement_are_silent() -> void:
 	assert_equal(_controller._get_movement_sound_radius(false, true, false), 0.0)
 	assert_equal(_controller._get_movement_sound_radius(true, false, false), 0.0)

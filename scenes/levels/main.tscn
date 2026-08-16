@@ -4,7 +4,8 @@
 [ext_resource type="ArrayMesh" uid="uid://8dtbg07i4cb3" path="res://backrooms-vr/source/Backrooms_Bake.obj" id="3_backrooms"]
 [ext_resource type="AudioStream" uid="uid://dgt6qjp3djryf" path="res://sounds/ambient/fluorescent-lamp.mp3" id="4_ambient"]
 [ext_resource type="AudioStream" uid="uid://b0jkqwjvm7uge" path="res://sounds/ambient/vhs-background.ogg" id="5_recorder_noise"]
-[ext_resource type="Script" path="res://scripts/ui/sound_meter.gd" id="6_sound_meter"]
+[ext_resource type="Script" uid="uid://kvrpvnvsxbnm" path="res://scripts/ui/sound_meter.gd" id="6_sound_meter"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/placeholder_enemy.tscn" id="7_enemy"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -67,6 +68,7 @@ light_energy = 1.25
 shadow_enabled = true
 
 [node name="Backrooms" type="MeshInstance3D" parent="." unique_id=1328281561]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0009331703, 0, -0.0069470406)
 mesh = ExtResource("3_backrooms")
 
 [node name="WallCollision" type="StaticBody3D" parent="Backrooms" unique_id=1059513414]
@@ -79,6 +81,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.98825, -0.219008, 5.20225
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="FloorCollision" unique_id=461834392]
 shape = SubResource("BoxShape_floor")
+
+[node name="PlaceholderEnemy" parent="." unique_id=1177617188 instance=ExtResource("7_enemy")]
+transform = Transform3D(0.034804612, 0, -0.9993941, 0, 1, 0, 0.9993941, 0, 0.034804612, -19.683872, 1.6, 5.163124)
 
 [node name="Players" type="Node3D" parent="." unique_id=1362598286]
 
@@ -108,9 +113,9 @@ theme_override_styles/background = SubResource("StyleBox_stamina_background")
 theme_override_styles/fill = SubResource("StyleBox_stamina_fill")
 show_percentage = false
 
-[node name="SoundMeter" type="Control" parent="HUD"]
+[node name="SoundMeter" type="Control" parent="HUD" unique_id=1634124703]
 layout_mode = 3
-anchors_preset = 8
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
@@ -124,23 +129,21 @@ grow_vertical = 0
 mouse_filter = 2
 script = ExtResource("6_sound_meter")
 
-[node name="Title" type="Label" parent="HUD/SoundMeter"]
+[node name="Title" type="Label" parent="HUD/SoundMeter" unique_id=976756168]
 layout_mode = 0
 offset_top = 5.0
 offset_right = 180.0
 offset_bottom = 21.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.58, 0.68, 0.65, 1)
 theme_override_font_sizes/font_size = 10
 text = "HEARING SIGNATURE"
 horizontal_alignment = 1
 
-[node name="RadiusLabel" type="Label" parent="HUD/SoundMeter"]
+[node name="RadiusLabel" type="Label" parent="HUD/SoundMeter" unique_id=911595382]
 layout_mode = 0
 offset_top = 67.0
 offset_right = 180.0
 offset_bottom = 87.0
-mouse_filter = 2
 theme_override_colors/font_color = Color(0.72, 0.82, 0.78, 1)
 theme_override_font_sizes/font_size = 12
 text = "SILENT"
