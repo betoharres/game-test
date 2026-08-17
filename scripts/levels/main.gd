@@ -42,8 +42,6 @@ const SPAWN_POSITIONS: Array[Vector3] = [
 @onready var ambient_variation_timer: Timer = $AmbientVariationTimer
 @onready var distant_sound: AudioStreamPlayer3D = $DistantSound
 @onready var distant_sound_timer: Timer = $DistantSoundTimer
-@onready var backrooms: MeshInstance3D = $Backrooms
-@onready var level_collision_shape: CollisionShape3D = $Backrooms/WallCollision/CollisionShape3D
 @onready var stamina_bar: ProgressBar = $HUD/StaminaDisplay/StaminaBar
 @onready var sound_meter: SoundMeter = $HUD/SoundMeter
 @onready var startup_black_screen: ColorRect = $StartupBlackout/BlackScreen
@@ -57,7 +55,6 @@ var _stamina_fade_tween: Tween
 
 
 func _ready() -> void:
-	_setup_level_collision()
 	player_spawner.spawn_function = _create_player
 	players.child_entered_tree.connect(_on_player_spawned)
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -106,29 +103,6 @@ func _process(_delta: float) -> void:
 		look_up_amount
 	)
 	distant_sound.volume_db = _current_distant_sound_volume_db + linear_to_db(volume_multiplier)
-
-
-func _setup_level_collision() -> void:
-	var collision_faces := PackedVector3Array()
-	for surface_index in backrooms.mesh.get_surface_count():
-		var surface_name: String = backrooms.mesh.surface_get_name(surface_index)
-		if not surface_name.begins_with("Wall_") and not surface_name.begins_with("Ceiling_"):
-			continue
-
-		var arrays := backrooms.mesh.surface_get_arrays(surface_index)
-		var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-		var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-		for vertex_index in indices:
-			collision_faces.append(vertices[vertex_index])
-
-	if collision_faces.is_empty():
-		push_error("Could not find wall or ceiling surfaces in the Backrooms mesh.")
-		return
-
-	var shape := ConcavePolygonShape3D.new()
-	shape.backface_collision = true
-	shape.set_faces(collision_faces)
-	level_collision_shape.shape = shape
 
 
 func _setup_ambient_sound() -> void:
