@@ -23,7 +23,7 @@ _surfaces = [{
 }]
 blend_shape_mode = 0
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_bvlbj"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_28v46"]
 resource_name = "office_floor_Cube"
 _surfaces = [{
 "aabb": AABB(-1.5, -0.05, -1.5, 3, 0.1, 3),
@@ -51,7 +51,7 @@ data = {
 "width": 64
 }
 
-[sub_resource type="ImageTexture" id="ImageTexture_ic7tq"]
+[sub_resource type="ImageTexture" id="ImageTexture_sticp"]
 image = SubResource("Image_28v46")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8224o"]
@@ -75,7 +75,7 @@ _surfaces = [{
 }]
 blend_shape_mode = 0
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_6takf"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_ic7tq"]
 resource_name = "office_floor_Cube_001"
 _surfaces = [{
 "aabb": AABB(-1.5, -0.01, -1.5, 3, 0.02, 3),
@@ -102,23 +102,26 @@ data = {
 "width": 64
 }
 
-[sub_resource type="ImageTexture" id="ImageTexture_d6te0"]
+[sub_resource type="ImageTexture" id="ImageTexture_10o28"]
 image = SubResource("Image_bvlbj")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_floor"]
+size = Vector3(3, 0.1, 3)
 
 [resource]
 item/0/name = "FloorCore"
-item/0/mesh = SubResource("ArrayMesh_bvlbj")
+item/0/mesh = SubResource("ArrayMesh_28v46")
 item/0/mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 item/0/mesh_cast_shadow = 1
 item/0/shapes = []
 item/0/navigation_mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 item/0/navigation_layers = 1
-item/0/preview = SubResource("ImageTexture_ic7tq")
+item/0/preview = SubResource("ImageTexture_sticp")
 item/1/name = "FloorSurface"
-item/1/mesh = SubResource("ArrayMesh_6takf")
+item/1/mesh = SubResource("ArrayMesh_ic7tq")
 item/1/mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 item/1/mesh_cast_shadow = 1
-item/1/shapes = []
+item/1/shapes = [SubResource("BoxShape3D_floor"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)]
 item/1/navigation_mesh_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 item/1/navigation_layers = 1
-item/1/preview = SubResource("ImageTexture_d6te0")
+item/1/preview = SubResource("ImageTexture_10o28")
