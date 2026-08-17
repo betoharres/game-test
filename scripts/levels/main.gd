@@ -25,16 +25,11 @@ const DISTANT_SOUND_MIN_DISTANCE := 20.0
 const DISTANT_SOUND_MAX_DISTANCE := 32.0
 const DISTANT_SOUND_LOOK_UP_VOLUME_MULTIPLIER := 1.7
 const STAMINA_FADE_DURATION := 0.5
-const SPAWN_POSITIONS: Array[Vector3] = [
-	Vector3(-3.0, 0.05, 6.0),
-	Vector3(3.0, 0.05, 6.0),
-	Vector3(-3.0, 0.05, 3.0),
-	Vector3(3.0, 0.05, 3.0),
-]
 
 @export_group("Audio")
 @export_range(-60.0, 0.0, 0.5) var recorder_noise_volume_db: float = -16.0
 
+@onready var player_spawn_points: Node3D = $PlayerSpawnPoints
 @onready var players: Node3D = $Players
 @onready var player_spawner: MultiplayerSpawner = $MultiplayerSpawner
 @onready var ambient_sound: AudioStreamPlayer = $AmbientSound
@@ -310,15 +305,16 @@ func _create_player(data: Dictionary) -> Node:
 	var peer_id: int = data["peer_id"]
 	var spawn_index: int = data["spawn_index"]
 	var player := PLAYER_SCENE.instantiate() as CharacterBody3D
+	var spawn_point := player_spawn_points.get_child(spawn_index) as Marker3D
 	player.name = str(peer_id)
-	player.position = SPAWN_POSITIONS[spawn_index]
+	player.position = players.to_local(spawn_point.global_position)
 	player.set_multiplayer_authority(peer_id, true)
 	_spawn_slots[peer_id] = spawn_index
 	return player
 
 
 func _get_open_spawn_index() -> int:
-	for spawn_index in SPAWN_POSITIONS.size():
+	for spawn_index in player_spawn_points.get_child_count():
 		if not _spawn_slots.values().has(spawn_index):
 			return spawn_index
 	return -1

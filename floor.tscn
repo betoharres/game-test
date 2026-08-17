@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://c1dajey1y1hkm"]
+
+[ext_resource type="PackedScene" uid="uid://d1r1u63dkpv13" path="res://3D/backrooms/office_floor.glb" id="1_oj3tl"]
+
+[node name="office_floor" unique_id=485149767 instance=ExtResource("1_oj3tl")]

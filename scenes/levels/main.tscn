@@ -45,6 +45,7 @@ stream = ExtResource("5_recorder_noise")
 wait_time = 12.0
 
 [node name="DistantSound" type="AudioStreamPlayer3D" parent="." unique_id=1095956799]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10.274467)
 unit_size = 8.0
 max_distance = 55.0
 panning_strength = 1.25
@@ -62,13 +63,31 @@ light_energy = 1.25
 shadow_enabled = true
 
 [node name="LevelPlaceholder" type="CSGBox3D" parent="." unique_id=1328281561]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 5)
-size = Vector3(20, 0.2, 20)
+transform = Transform3D(6.8720737, 0, 0, 0, 1, 0, 0, 0, 1.6525406, 0.69647217, -0.1, 5)
 use_collision = true
+size = Vector3(6.0321045, 0.2, 20)
 
 [node name="PlaceholderEnemy" parent="." unique_id=1177617188 instance=ExtResource("7_enemy")]
 transform = Transform3D(0.034804612, 0, -0.9993941, 0, 1, 0, 0.9993941, 0, 0.034804612, -19.683872, 1.6, 5.163124)
 visible = false
+
+[node name="PlayerSpawnPoints" type="Node3D" parent="." unique_id=1802673010]
+
+[node name="Player1" type="Marker3D" parent="PlayerSpawnPoints" unique_id=360337116]
+transform = Transform3D(-0.38260987, -0.89751863, -0.21924867, 0.77872515, -0.44097653, 0.44623637, -0.497189, 0, 0.8676423, 0.68043125, 0.05, 13.958626)
+gizmo_extents = 0.75
+
+[node name="Player2" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1412173671]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66454077, 0.05, 14.015633)
+gizmo_extents = 0.75
+
+[node name="Player3" type="Marker3D" parent="PlayerSpawnPoints" unique_id=512194580]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7902219, 0.05, 13.971579)
+gizmo_extents = 0.75
+
+[node name="Player4" type="Marker3D" parent="PlayerSpawnPoints" unique_id=1412407704]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.027899027, 0.05, 14.733258)
+gizmo_extents = 0.75
 
 [node name="Players" type="Node3D" parent="." unique_id=1362598286]
 
