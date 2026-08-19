@@ -1,0 +1,23 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://isp6rbboknbv"]
+
+[ext_resource type="Texture2D" uid="uid://b1tk56kphnntq" path="res://old-motel-carpet-bl/old-motel-carpet_albedo.png" id="1_albedo"]
+[ext_resource type="Texture2D" uid="uid://dy30mlo3xj0fd" path="res://old-motel-carpet-bl/old-motel-carpet_metallic.png" id="2_metallic"]
+[ext_resource type="Texture2D" uid="uid://dd2gisetegvvt" path="res://old-motel-carpet-bl/old-motel-carpet_roughness.png" id="3_roughness"]
+[ext_resource type="Texture2D" uid="uid://cr7088v0s0cli" path="res://old-motel-carpet-bl/old-motel-carpet_ao.png" id="4_ao"]
+[ext_resource type="Texture2D" uid="uid://b4tpap8oxjvul" path="res://old-motel-carpet-bl/old-motel-carpet_normal-ogl.png" id="5_normal"]
+[ext_resource type="Texture2D" uid="uid://dvow44uwrykb1" path="res://old-motel-carpet-bl/old-motel-carpet_height.png" id="6_height"]
+
+[resource]
+resource_name = "Old Motel Carpet"
+albedo_texture = ExtResource("1_albedo")
+metallic = 1.0
+metallic_texture = ExtResource("2_metallic")
+roughness_texture = ExtResource("3_roughness")
+normal_enabled = true
+normal_texture = ExtResource("5_normal")
+ao_enabled = true
+ao_texture = ExtResource("4_ao")
+heightmap_enabled = true
+heightmap_scale = 0.03
+heightmap_texture = ExtResource("6_height")
+uv1_scale = Vector3(8, 8, 8)
